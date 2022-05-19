@@ -8,6 +8,8 @@ import { UpgraderMethods } from "./role.upgrader";
 
 
 
+
+
 export const loop = errorMapper(() => {
     var mySpawn1: MySpawn = new MySpawn("Spawn1");
     var remainingEnergy = mySpawn1.getStore()[RESOURCE_ENERGY];
