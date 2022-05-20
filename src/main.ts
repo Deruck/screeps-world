@@ -5,12 +5,16 @@ import { HarvesterMethods } from "./roles/role.harvester";
 import { getCreepNum } from "./utils";
 import { UpgraderMethods } from "./roles/role.upgrader";
 import { configs } from "./config"
+import { addPrototypeExtension } from "./prototype-extension/extension"
+import { MemoryController } from "./memory/memoryController"
+
 
 console.log(`==============================================`);
 console.log(`Global Reset  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
 console.log(`==============================================`);
 global.ticksFromLastReset = 0;
-
+addPrototypeExtension();
+MemoryController.removeDeadCreepMemory();
 
 
 
