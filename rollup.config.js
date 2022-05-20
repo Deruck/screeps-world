@@ -39,6 +39,8 @@ const pluginDeploy = config && config.copyPath ?
 
 export default {
     input: 'src/main.ts',
+    // input: 'src/test.ts',
+    // input: 'src/command.ts',
     output: {
         file: 'dist/main.js',
         format: 'cjs',

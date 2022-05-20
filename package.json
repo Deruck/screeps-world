@@ -20,7 +20,7 @@
   },
   "scripts": {
     "build": "rollup -cw",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "rollup -cw --environment DEST:test",
     "push": "rollup -cw --environment DEST:main",
     "local": "rollup -cw --environment DEST:local"
   }
