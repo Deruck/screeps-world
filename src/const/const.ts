@@ -1,0 +1,4 @@
+export enum RETURN_CODE {
+    TASK_DONE = 100,
+    TASK_PROCESSING = 101
+}

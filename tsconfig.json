@@ -6,6 +6,7 @@
         "baseUrl": "./",
         "sourceMap": true,
         "allowSyntheticDefaultImports": true,
+        "noImplicitThis": true,
         "paths": {
             "@/*": ["./src/*"]
         }
