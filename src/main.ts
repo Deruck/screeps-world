@@ -18,7 +18,11 @@ MemoryController.removeDeadCreepMemory();
 
 
 
-export const loop = errorMapper(() => {
+// export const loop = errorMapper(() => {
+
+// })
+
+export const loop = function() {
     console.log(`================================tick: ${Game.time}`);
     var mySpawn1: MySpawn = new MySpawn("Spawn1");
     var remainingEnergy = mySpawn1.getStore()[RESOURCE_ENERGY];
@@ -52,8 +56,4 @@ export const loop = errorMapper(() => {
     console.log(`Ticks from last global reset: ${global.ticksFromLastReset}`);
     global.ticksFromLastReset++;
     console.log(`==============================================`);
-})
-
-// export const loop = function() {
-
-// }
+}

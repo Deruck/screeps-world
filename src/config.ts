@@ -1,10 +1,10 @@
 export const configs = {
     role_management: {
         harvester: {
-            num: 8
+            num: 5
         },
         upgrader: {
-            num: 8
+            num: 10
         }
     },
     reuse_path: 5
