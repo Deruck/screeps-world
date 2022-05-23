@@ -1,4 +1,4 @@
-import { CreepType } from "./creep_type";
+import { CreepType } from "./module/creep_type/creep_type";
 
 export class MySpawn {
     spawn: StructureSpawn;

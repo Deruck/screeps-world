@@ -1,9 +1,0 @@
-export enum RETURN_CODE {
-    TASK_DONE = 100,
-    TASK_PROCESSING = 101,
-    CREEP_BUSY = 102
-}
-export enum TASKS {
-    HARVEST_TO_STORE,
-    HARVEST_TO_UPGRADE,
-}

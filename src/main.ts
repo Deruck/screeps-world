@@ -1,12 +1,12 @@
 import { errorMapper } from "./utils/errorMapper"
-import { harvester, creepTypeNames, upgrader } from "./creep_type";
+import { harvester, creepTypeNames, upgrader } from "./module/creep_type/creep_type";
 import { MySpawn } from "./my_spawn";
-import { HarvesterMethods } from "./roles/role.harvester";
+import { HarvesterMethods } from "./module/roles/role.harvester";
 import { getCreepNum } from "./utils";
-import { UpgraderMethods } from "./roles/role.upgrader";
+import { UpgraderMethods } from "./module/roles/role.upgrader";
 import { configs } from "./config"
-import { addPrototypeExtension } from "./prototype-extension/extension"
-import { MemoryController } from "./memory/memoryController"
+import { addPrototypeExtension } from "./module/prototype_extension/extension"
+import { MemoryController } from "./module/memory/memoryController"
 
 
 console.log(`==============================================`);

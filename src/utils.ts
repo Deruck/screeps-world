@@ -1,6 +1,7 @@
-import { creepTypeNames } from "./creep_type"
+import { CreepTypeNames } from "./const";
 
-export function getCreepNum(type: creepTypeNames): number {
+
+export function getCreepNum(type: CreepTypeNames): number {
     var result = 0;
     for (var creepName in Game.creeps) {
         if (Game.creeps[creepName].memory.role == type) {
