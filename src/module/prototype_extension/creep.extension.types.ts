@@ -11,43 +11,43 @@ declare global {
             moveToOpts?: MoveToOpts
         ): ReturnCode;
 
-        runAct(this: Creep, actType: ActTypes, actOpts: ActOpts);
+        runAct(this: Creep, actType: ActTypes, actOpts: ActOpts): ReturnCode;
 
-        _resetActMemory(this: Creep);
+        _resetActMemory(this: Creep): void;
 
-        harvestEnergy(this: Creep, source: Source): ReturnCode;
+        harvestEnergy(this: Creep, source: Source, moveToOpts?: MoveToOpts): ReturnCode;
 
-        storeEnergy(this: Creep, store: AnyStoreStructure): ReturnCode;
+        storeResource(this: Creep, store: AnyStoreStructure, resourceType: ResourceConstant, amount?: number, moveToOpts?: MoveToOpts): ReturnCode;
 
-        upgrade(this: Creep): ReturnCode;
+        upgrade(this: Creep, upgradeTimes?: number, moveToOpts?: MoveToOpts): ReturnCode;
 
         // runTask(this: Creep, task: taskTypes, taskOpts: TaskOpts): ReturnCode;
 
-        resetTaskMemory(this: Creep);
+        // resetTaskMemory(this: Creep);
     }
+
+    interface Creep extends CreepExtension { }
     
-    interface Creep {
-        moveToTarget(
-            this: Creep,
-            targetPos: RoomPosition,
-            range: number,
-            moveToOpts?: MoveToOpts
-        ): ReturnCode;
-
-        harvestEnergy(this: Creep, source: Source): ReturnCode;
-
-        storeEnergy(this: Creep, store: AnyStoreStructure): ReturnCode;
-
-        upgrade(this: Creep): ReturnCode;
-
-        // runTask(this: Creep, task: taskTypes, taskOpts: TaskOpts): ReturnCode;
-
-        resetTaskMemory(this: Creep);
-    }
     
     interface CreepMemory {
         role: string,
-        busy: boolean,
+        /**
+        * 动作记录，
+        */
+        act: {
+            /**
+                * 0: 闲置
+                * 1: 通过check
+                * 2: 通过prepare
+                * 3: 通过exec
+                * 4: 通过end
+                */
+            status: 0 | 1 | 2 | 3 | 4,
+            busy: {
+                status: boolean,
+            },
+            upgradeTimes?: number
+        }
     }
     
 }

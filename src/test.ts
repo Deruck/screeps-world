@@ -15,35 +15,22 @@ const starter = CreepTypeModule.getCreepType(
 )
 
 
+
 export const loop = function () {
+    console.log("=============================================================");
     var creep1 = Game.creeps["creep1"];
     var source = creep1.room.find(FIND_SOURCES)[0];
     // @ts-ignore
     const container: StructureContainer = creep1.room.find(FIND_STRUCTURES, {
         filter: { structureType: STRUCTURE_CONTAINER}
     })[0];
-    // var code = creep1.runTask(
-    //     taskTypes.TaskHarvestToStore,
-    //     {
-    //         fromSourceId: source.id,
-    //         toStoreId: container.id,
-    //         moveToOpts: {
-    //             reusePath: 10,
-    //             visualizePathStyle: { stroke: '#ffffff' },
-    //         }
-    //     }
-    // )
-    var code = creep1.runTask(
-        taskTypes.TaskHarvestToUpgrade,
-        {
-            fromSourceId: source.id,
-            moveToOpts: {
-                reusePath: 10,
-                visualizePathStyle: { stroke: '#ffffff' },
-            }
-        }
-    )
-    console.log(code);
-
+    if (creep1.store[RESOURCE_ENERGY] <= 0) {
+        console.log("harvest: " + creep1.harvestEnergy(source));
+    }
+    console.log(creep1.storeResource(container, RESOURCE_ENERGY, 100, undefined));
+    if (creep1.store[RESOURCE_ENERGY]) {
+        console.log(creep1.upgrade(3));
+    }
+    console.log("=============================================================");
 }
 

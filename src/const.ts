@@ -1,7 +1,7 @@
 export enum ReturnCode {
     DONE = 100,
     PROCESSING = 101,
-    FAILED = 102
+    FAILED = 102,
 }
 export enum TaskTypes {
     HARVEST_TO_STORE,
@@ -10,8 +10,9 @@ export enum TaskTypes {
 
 export enum ActTypes {
     HARVEST_ENERGY = "harvestEnergy",
-    STORE_ENERGY = "storeEnergy",
+    STORE_RESOURCE = "storeResource",
     UPGRADE = "upgrade",
+    WITHDRAW_RESOURCE = "withdrawResource"
 }
 
 export enum CreepTypeNames {

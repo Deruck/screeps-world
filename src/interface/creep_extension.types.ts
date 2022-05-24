@@ -2,7 +2,7 @@ import { ActTypes } from "@/const";
 
 declare global {
     interface CreepExtensionModuleContext {
-        getAct(actType: ActTypes): Act
+        getAct(actType: ActTypes, actOpts: ActOpts): Act
     }
     
     interface CreepExtensionModule {

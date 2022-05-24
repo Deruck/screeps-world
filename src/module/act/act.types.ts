@@ -4,19 +4,6 @@ import { ActTypes } from "@/const";
 
 declare global {
     interface CreepMemory {
-        /**
-         * 动作记录，
-         */
-        act: {
-            /**
-             * 0: 闲置
-             * 1: 通过check
-             * 2: 通过prepare
-             * 3: 通过exec
-             * 4: 通过end
-             */
-            status: 0 | 1 | 2 | 3 | 4,
-        }
     }
         
     interface Act {
@@ -49,6 +36,10 @@ declare global {
     interface ActOpts {
         source?: Source,
         store?: AnyStoreStructure,
+        resourceType?: ResourceConstant,
+        upgradeTimes?: number,
+        amount?: number,
+
         moveToOpts?: MoveToOpts
     }
 

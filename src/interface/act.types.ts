@@ -6,7 +6,7 @@ declare global {
     }
     
     interface ActModule {
-        getAct(actType: ActTypes): Act;
+        getAct(actType: ActTypes, actOpts: ActOpts): Act;
     }
 }
 
