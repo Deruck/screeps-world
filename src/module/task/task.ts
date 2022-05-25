@@ -1,168 +1,197 @@
-import { CreepTypeNames } from "@/const"
-import { ReturnCode } from "@/const";
+import { Emoji, ReturnCode, TaskTypes } from "@/const";
 
+export const createTaskModule = function (ctx: TaskModuleContext): TaskModule {
+    const actModule = ctx.actModule;
 
-const TaskHarvesToStore: (taskOpts: TaskOpts) => Task = (taskOpts) => ({
-    task_subject: new Set([CreepTypeNames.STARTER, CreepTypeNames.WORKER]),
-
-    task_name: taskTypes.TaskHarvestToStore,
-
-    check(creep: Creep) {
-        var ifSourceValid = Boolean(Game.getObjectById(taskOpts.fromSourceId));
-        var ifStoreValid = Boolean(Game.getObjectById(taskOpts.toStoreId));
-        return ifSourceValid && ifStoreValid;
-    },
-
-    prepare(creep: Creep) {
-        creep.memory.task[this.task_name] = 0;
-        return true;
-    },
-
-    exec(creep: Creep) {
-        var from = Game.getObjectById(taskOpts.fromSourceId);
-        var to = Game.getObjectById(taskOpts.toStoreId);
-        // 初始
-        if (creep.memory.task[this.task_name] == 0) {
-            if (creep.store.getUsedCapacity() > 0) {
-                creep.say(`🚴‍♀️⬅`);
-                creep.memory.task[this.task_name] = 3;
-            } else {
-                creep.say(`🚴‍♀️➡`);
-                creep.memory.task[this.task_name] = 1
+    const work = function (this: TaskModule, creep: Creep): TaskWorkReturn {
+        actModule.work(creep);
+        if (!creep.memory.task) {
+            this._resetTaskMemory(creep);
+        }
+        if (!creep.memory.task.busy) {
+            return {
+                taskType: undefined,
+                returnCode: ReturnCode.WAITING
+            }
+        } else {
+            return {
+                taskType: creep.memory.task.taskType, 
+                returnCode: this._runTask(creep)
             }
         }
-        // 去往source
-        if (creep.memory.task[this.task_name] == 1) {
-            if (creep.moveToTarget(from.pos, 1, taskOpts.moveToOpts) == ReturnCode.DONE) {
-                creep.say(`⛏`);
-                creep.memory.task[this.task_name] = 2;
-            }
-        }
-        // 开采
-        if (creep.memory.task[this.task_name] == 2) {
-            var freeCap = creep.store.getFreeCapacity();
-            if (freeCap > 0) {
-                creep.harvest(from);
-            } else {
-                creep.say(`🚴‍♀️⬅`);
-                creep.memory.task[this.task_name] = 3;
-            }
-        }
-        // 去往store
-        if (creep.memory.task[this.task_name] == 3) {
-            if (creep.moveToTarget(to.pos, 1, taskOpts.moveToOpts) == ReturnCode.DONE) {
-                creep.say(`🔄`);
-                creep.memory.task[this.task_name] = 4;
-            }
-        }
-        // transfer
-        if (creep.memory.task[this.task_name] == 4) {
-            var code = creep.transfer(to, RESOURCE_ENERGY);
-            if ([-6, -8, 0].includes(code)) {
-                creep.say(`🔄✅: ${code}`);
-            } else {
-                creep.say(`🔄❌: ${code}`);
-            }
-            return true;
-        }
-        return false;
-
-    },
-
-    end(creep) {
-        delete creep.memory.task[this.task_name];
-        return true;
-    },
-
-    break_condition(creep) {
-        var to = Game.getObjectById(taskOpts.toStoreId);
-        if (!(to) || to.store.getFreeCapacity() <= 0) {
-            return true;
-        }
-        return false;
     }
-});
 
-const TaskHarvestToUpgrade: (taskOpts: TaskOpts) => Task = (taskOpts) => ({
-    task_subject: new Set([CreepTypeNames.STARTER, CreepTypeNames.WORKER]),
+    const _resetTaskMemory = function (creep: Creep) {
+        creep.memory.task = {
+            status: 0,
+            busy: false
+        };
+    };
 
-    task_name: taskTypes.TaskHarvestToUpgrade,
+    const _getTask = function (this: TaskModule, taskType: TaskTypes, taskOpts: TaskOpts): Task {
+        return this._taskCreatorMenu.get(taskType)(taskOpts);
+    }
 
-    check(creep: Creep) {
-        var ifSourceValid = Boolean(Game.getObjectById(taskOpts.fromSourceId));
-        return  ifSourceValid;
-    },
+    const _completeTask = function (this: TaskModule, creep: Creep, taskType: TaskTypes, taskOpts: TaskOpts): ReturnCode {
+        if (!creep.memory.task) {
+            this._resetTaskMemory(creep);
+        }
+        let task = this._getTask(taskType, taskOpts);
+        // 如果没有task，便指派task
+        if (!creep.memory.task.busy) {
+            creep.memory.task.taskType = taskType;
+            creep.memory.task.taskOpts = taskOpts;
+            creep.memory.task.token = task.token;
+        }
+        // 如果在执行当前task，则继续执行，否则返回Busy
+        if (
+            taskType == creep.memory.task.taskType &&
+            task.token == creep.memory.task.token
+        ) {
+            return this._runTask(creep);
+        } else {
+            return ReturnCode.BUSY;
+        }
+    }
 
-    prepare(creep: Creep) {
-        creep.memory.task[this.task_name] = 0;
-        return true;
-    },
-
-    exec(creep: Creep) {
-        var from = Game.getObjectById(taskOpts.fromSourceId);
-        // 初始
-        if (creep.memory.task[this.task_name] == 0) { 
-            if (creep.store.getUsedCapacity() > 0) {
-                creep.say(`🚴‍♀️⬅`);
-                creep.memory.task[this.task_name] = 3;
+    const _runTask = function (this: TaskModule, creep: Creep): ReturnCode {
+        // 确保每个tick只会执行一个task
+        const curTime = Game.time;
+        if (creep.memory.task.lastTaskTime != curTime) {
+            creep.memory.task.lastTaskTime = curTime;
+        } else {
+            return ReturnCode.BUSY;
+        }
+        let task = this._getTask(creep.memory.task.taskType, creep.memory.task.taskOpts);
+        // check
+        if (creep.memory.task.status == 0) {
+            if (task.check(creep)) {
+                creep.memory.task.busy = true;
+                creep.memory.task.status = 1;
             } else {
-                creep.say(`🚴‍♀️➡`);
-                creep.memory.task[this.task_name] = 1
+                creep.actLog(`task check failed.`);
+                this._resetTaskMemory(creep);
+                return ReturnCode.FAILED; 
             }
         }
-        // 去往source
-        if (creep.memory.task[this.task_name] == 1) {
-            if (creep.moveToTarget(from.pos, 1, taskOpts.moveToOpts) == ReturnCode.DONE) {
-                creep.say(`⛏`);
-                creep.memory.task[this.task_name] = 2;
-            }   
-        }
-        // 开采
-        if (creep.memory.task[this.task_name] == 2) {
-            var freeCap = creep.store.getFreeCapacity();
-            if (freeCap > 0) {
-                creep.harvest(from);
-            } else {
-                creep.say(`🚴‍♀️⬅`);
-                creep.memory.task[this.task_name] = 3;
+        // prepare
+        if (creep.memory.task.status == 1) {
+            if (task.prepare(creep)) {
+                creep.memory.task.status = 2;
             }
         }
-        // 去往controller
-        if (creep.memory.task[this.task_name] == 3) {
-            if (creep.moveToTarget(creep.room.controller.pos, 3, taskOpts.moveToOpts) == ReturnCode.DONE) {
-                creep.say(`🆙`);
-                creep.memory.task[this.task_name] = 4;
-            }   
+        // exec
+        if (creep.memory.task.status == 2) {
+            const execCode = task.exec(creep);
+            if (execCode != ReturnCode.PROCESSING) {
+                creep.memory.task.status = 3;
+            } 
         }
-        // upgrade
-        if (creep.memory.task[this.task_name] == 4) {
-            var energy = creep.store[RESOURCE_ENERGY];
-            if (energy > 0) {
-                creep.upgradeController(creep.room.controller);
-            } else {
-                creep.say(`🆙✅`);
+        // check break condition
+        if (Boolean(task.break_condition) && [1, 2].includes(creep.memory.task.status)) {
+            if (!task.break_condition(creep)) {
+                creep.say(Emoji.WARNING + Emoji.END);
+                creep.actLog(`task break.`);
+                creep.memory.task.status = 3;
+            }
+        }
+        // end
+        if (creep.memory.task.status == 3) {
+            if (task.end(creep)) {
+                this._resetTaskMemory(creep);
+                return ReturnCode.DONE;
+            }
+        }
+        return ReturnCode.PROCESSING;
+    }
+
+    const _createHarvestToStore: TaskCreator = function (taskOpts) {
+        return {
+            taskType: TaskTypes.HARVEST_TO_STORE,
+            token: taskOpts.resourceObjId + taskOpts.toStoreId,
+
+            resourceObjId: taskOpts.resourceObjId,
+            toStoreId: taskOpts.toStoreId,
+            resourceType: taskOpts.resourceType,
+            reusePath: taskOpts.reusePath,
+            amount: taskOpts.amount,
+
+            check(creep: Creep) {
+                const ifWorkBody = creep.getActiveBodyparts(WORK) > 0;
+                const ifCarryBody = creep.getActiveBodyparts(CARRY) > 0;
+                return ifWorkBody && ifCarryBody;
+            },
+        
+            prepare(creep: Creep) {
+                creep.actLog(`prepare`);
+                creep.memory.task[this.taskType] = 0;
                 return true;
-            }
+            },
+
+            exec(creep: Creep) {
+                const reusePath = this.reusePath ? this.reusePath : 5;
+                const moveToOpts: MoveToOpts = {
+                    reusePath: reusePath,
+                    visualizePathStyle: {
+                        stroke: "#fdcb6e"
+                    }
+                }
+                // harvest
+                if (creep.memory.task[this.taskType] == 0) {
+                    const harvestCode = actModule.harvestResource(creep, this.resourceObjId, moveToOpts);
+                    if (harvestCode == ReturnCode.DONE) {
+                        creep.actLog(`harvest success!`);
+                        creep.memory.task[this.taskType] = 1;
+                    } else {
+                        return harvestCode;
+                    }
+                }
+                // store
+                if (creep.memory.task[this.taskType] == 1) {
+                    const storeCode = actModule.storeResource(creep, this.toStoreId, this.resourceType, this.amount, moveToOpts)
+                    return storeCode;
+                }
+                return ReturnCode.ERROR;
+            },
+        
+            end(creep) {
+                delete creep.memory.task[this.taskType];
+                return true;
+            },
         }
-        return false;
+    };
 
-    },
+    const harvestToStore = function (
+        this: TaskModule,creep: Creep, fromSourceId: Id<Source>, toStoreId: Id<AnyStoreStructure>,
+        resourceType: ResourceConstant, amount?: number, reusePath?: number
+    ): ReturnCode {
+        return this._completeTask(
+            creep,
+            TaskTypes.HARVEST_TO_STORE,
+            {
+                resourceObjId: fromSourceId,
+                toStoreId: toStoreId,
+                resourceType: resourceType, 
+                amount: amount, 
+                reusePath: reusePath
+            }
+        )
+    }
 
-    end(creep) {
-        delete creep.memory.task[this.task_name];
-        return true;
-    },
-})
+    const _taskCreatorMenu: Map<TaskTypes, TaskCreator> = new Map([
+        [TaskTypes.HARVEST_TO_STORE, _createHarvestToStore],
+    ])
 
-export const taskMenu = {
-    TaskHarvestToStore: TaskHarvesToStore,
-    TaskHarvestToUpgrade: TaskHarvestToUpgrade
-}
 
-export enum taskTypes {
-    Harvest = "Harvest",
-    StoreEnergy = "StoreEnergy",
-    Upgrade = "Upgrade",
-    TaskHarvestToStore = "TaskHarvestToStore",
-    TaskHarvestToUpgrade = "TaskHarvestToUpgrade"
+
+
+    return {
+        work: work,
+        _resetTaskMemory: _resetTaskMemory,
+        _taskCreatorMenu: _taskCreatorMenu,
+        _getTask: _getTask,
+        _completeTask: _completeTask,
+        _runTask: _runTask,
+        harvestToStore: harvestToStore,
+    }
 }

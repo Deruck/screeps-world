@@ -6,7 +6,9 @@ declare global {
     }
     
     interface CreepTypeModule {
-        getCreepType(creepTypeName: CreepTypeNames, bodyPartsIndex: BodyPartsIndex): CreepType
+        getCreepType(creepTypeName: CreepTypeNames, bodyPartsIndex: BodyPartsIndex): CreepType;
+
+
     }
 }
 

@@ -1,18 +1,44 @@
 export enum ReturnCode {
-    DONE = 100,
-    PROCESSING = 101,
-    FAILED = 102,
+    DONE = "[Done]",
+    PROCESSING = "[Processing]",
+    FAILED = "[Failed]",
+    WAITING = "[Waiting]",
+    SUCCESS = "[Success]",
+    BUSY = "[Busy]",
+    ERROR = "[Error]",
 }
+
 export enum TaskTypes {
-    HARVEST_TO_STORE,
-    HARVEST_TO_UPGRADE,
+    HARVEST_TO_STORE = "harvestToStore",
 }
 
 export enum ActTypes {
-    HARVEST_ENERGY = "harvestEnergy",
+    HARVEST_RESOURCE = "harvestResource",
     STORE_RESOURCE = "storeResource",
     UPGRADE = "upgrade",
-    WITHDRAW_RESOURCE = "withdrawResource"
+    WITHDRAW_RESOURCE = "withdrawResource",
+    BUILD_CONSTRUCTION = "buildConstruction"
+}
+
+export const defaultMoveToOpts: MoveToOpts = {
+    reusePath: 5, 
+    visualizePathStyle: {
+        stroke: "#ffffff",
+    }
+}
+
+export enum Emoji {
+    HARVEST = "⛏",
+    STORE = "📤",
+    WITHDRAW = "📥",
+    MOVE = "🚴‍♂️",
+    UPGRADE = "🧬",
+    BUILD = "🧱",
+    REPAIR = "🛠",
+    SUCCESS = "✅",
+    FAIL = "❌",
+    WARNING = "❗",
+    END = "⏹",
 }
 
 export enum CreepTypeNames {
@@ -24,4 +50,13 @@ export enum CreepTypeNames {
     HARVESTER = "harvester",
     /**特化搬运者, 1move + 2carry, 主要在road上行走*/
     CARRIER = "carrier"
+}
+
+/*****************************************************************************************
+ * Interface
+ *****************************************************************************************/
+
+declare global {
+    type AnyResourceObj = Source | Mineral | Deposit;
+    type AnyResourceObjId = Id<Source> | Id<Mineral> | Id<Deposit>;
 }

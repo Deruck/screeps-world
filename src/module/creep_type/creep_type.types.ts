@@ -2,24 +2,23 @@
  * 使用每个bodyPart类型的数量来刻画body，方便定义
  */
 interface BodyPartsIndex {
-    TOUGH?: number
-    WORK?: number,
-    CARRY?: number,
-    ATTACK?: number,
-    RANGED_ATTACK?: number,
-    HEAL?: number,
-    CLAIM?: number,
-    MOVE?: number,
+    tough?: number
+    work?: number,
+    carry?: number,
+    attack?: number,
+    ranged_attack?: number,
+    heal?: number,
+    claim?: number,
+    move?: number,
 }
-
-type BODY_PARTS = (
-    WORK | MOVE | CARRY | ATTACK | RANGED_ATTACK | HEAL | CLAIM | TOUGH
-)
 
 interface CreepType {
     name: string;
     bodyPartsIndex: BodyPartsIndex;
-    bodyParts: string[];
+    bodyParts: BodyPartConstant[];
     cost: number;
 }
 
+interface CreepMemory {
+    type: CreepType,
+}

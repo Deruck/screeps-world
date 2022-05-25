@@ -1,16 +1,39 @@
-import { ActTypes } from "@/const";
+import { ActTypes, ReturnCode } from "@/const";
 
 
 
 declare global {
     interface CreepMemory {
+        act?: {
+            /**
+                * 0: 闲置
+                * 1: 通过check
+                * 2: 通过prepare
+                * 3: 通过exec
+                * 4: 通过end
+                */
+            status: 0 | 1 | 2 | 3 | 4,
+            busy: boolean,
+            lastActTime?: number,
+            actOpts?: ActOpts,
+            actType?: ActTypes,
+            token?: string
+
+            times?: number
+        }
     }
         
     interface Act {
         /**
          * 动作名称
          */
-        act_name: ActTypes,
+        actType: ActTypes,
+        token: string,
+        resourceObjId?: Id<AnyResourceObj>,
+        storeId?: Id<AnyStoreStructure>,
+        constructionSiteId?: Id<ConstructionSite>,
+        threshold?: number,
+
         /**
          * 检查条件，一个tick内完成，检查通过返回true
          */
@@ -28,16 +51,18 @@ declare global {
          */
         end: (creep: Creep) => boolean,
         /**
-         * 意外终止条件，提前跳出
+         * 意外终止条件，为false提前跳出
          */
         break_condition?: (creep: Creep) => boolean,
     }
 
     interface ActOpts {
-        source?: Source,
-        store?: AnyStoreStructure,
+        resourceObjId?: Id<AnyResourceObj>,
+        storeId?: Id<AnyStoreStructure>,
+        constructionSiteId?: Id<ConstructionSite>,
+
         resourceType?: ResourceConstant,
-        upgradeTimes?: number,
+        times?: number,
         amount?: number,
 
         moveToOpts?: MoveToOpts
@@ -45,5 +70,10 @@ declare global {
 
     interface ActCreator {
         (actOpts: ActOpts): Act
+    }
+
+    interface ActWorkReturn {
+        actType: ActTypes | undefined,
+        returnCode: ReturnCode
     }
 }

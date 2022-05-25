@@ -1,7 +1,17 @@
 import { createExtensionModule } from "@/module/prototype_extension/extension";
+import { createCreepExtensionModule } from "@/module/prototype_extension/creep.extension";
+import { createSpawnExtensionModule } from "@/module/prototype_extension/spawn.extension";
 
-import { creepExtensionModule } from "./creep_extension.module";
+const creepExtensionModule = createCreepExtensionModule({
 
-export const ExtensionModule = createExtensionModule({
-    addCreepExtension: creepExtensionModule.addCreepExtionsion
+})
+
+const spawnExtensionModule = createSpawnExtensionModule({
+
+})
+
+
+export const extensionModule = createExtensionModule({
+    addCreepExtension: creepExtensionModule.addCreepExtension,
+    addSpawnExtension: spawnExtensionModule.addSpawnExtension
 })

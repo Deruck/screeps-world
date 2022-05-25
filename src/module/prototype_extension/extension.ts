@@ -1,9 +1,8 @@
-export const createExtensionModule = function(context: ExtensionModuleContext): ExtensionModule {
-    const addCreepExtension = context.addCreepExtension;
-
+export const createExtensionModule = function(ctx: ExtensionModuleContext): ExtensionModule {
     const addPrototypeExtension = function () {
         console.log(`挂载原型拓展...`)
-        addCreepExtension();
+        ctx.addCreepExtension();
+        ctx.addSpawnExtension();
     }
 
     return {

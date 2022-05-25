@@ -1,36 +1,42 @@
 import { CreepTypeNames } from "./const";
-import { CreepTypeModule } from "./interface/creep_type.module";
-import { ExtensionModule } from "./interface/extension.module";
-import { taskTypes } from "./module/task/task";
+import { actModule } from "./interface/act.module";
+import { creepTypeModule } from "./interface/creep_type.module";
+import { extensionModule } from "./interface/extension.module";
+import { taskModule } from "./interface/task.module";
 
-ExtensionModule.addPrototypeExtension();
+// import { taskTypes } from "./module/task/task";
 
-const starter = CreepTypeModule.getCreepType(
-    CreepTypeNames.STARTER, 
+extensionModule.addPrototypeExtension();
+
+const starter = creepTypeModule.getCreepType(
+    CreepTypeNames.STARTER,
     {
-        WORK: 1,
-        CARRY: 1,
-        MOVE: 1
+        work: 1,
+        move: 2,
+        carry: 2
     }
 )
 
 
-
 export const loop = function () {
     console.log("=============================================================");
-    var creep1 = Game.creeps["creep1"];
-    var source = creep1.room.find(FIND_SOURCES)[0];
-    // @ts-ignore
-    const container: StructureContainer = creep1.room.find(FIND_STRUCTURES, {
-        filter: { structureType: STRUCTURE_CONTAINER}
-    })[0];
-    if (creep1.store[RESOURCE_ENERGY] <= 0) {
-        console.log("harvest: " + creep1.harvestEnergy(source));
-    }
-    console.log(creep1.storeResource(container, RESOURCE_ENERGY, 100, undefined));
-    if (creep1.store[RESOURCE_ENERGY]) {
-        console.log(creep1.upgrade(3));
-    }
+    const spawn1 = Game.spawns["Spawn1"];
+    console.log(starter.bodyParts);
+    console.log(starter.cost);
+    console.log([WORK, MOVE, MOVE, CARRY, CARRY]);
+
+    console.log("spawning: " + spawn1.spawnCreepFromType(starter, 20));
+
+    // const creep1 = Game.creeps["creep1"];
+    // // @ts-ignore
+    // const storage: StructureStorage = creep1.room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_STORAGE } })[0];
+    // var source = creep1.room.find(FIND_SOURCES)[0];
+    // const constructionSite: ConstructionSite = creep1.room.find(FIND_MY_CONSTRUCTION_SITES)[0];
+
+    // console.log(`Harvest to Store: ${taskModule.harvestToStore(creep1, source.id, storage.id, RESOURCE_ENERGY)}`);
+
+    // console.log("task work: " + JSON.stringify(taskModule.work(creep1)));
+    // console.log("act work: " + JSON.stringify(actModule.work(creep1)));
     console.log("=============================================================");
 }
 

@@ -1,5 +1,5 @@
 import { createActModule } from "@/module/act/act";
 
-export const ActModule = createActModule({
+export const actModule = createActModule({
 
 })
