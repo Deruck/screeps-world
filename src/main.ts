@@ -1,59 +1,54 @@
-import { errorMapper } from "./utils/errorMapper"
-import { harvester, creepTypeNames, upgrader } from "./module/creep_type/creep_type";
-import { MySpawn } from "./my_spawn";
-import { HarvesterMethods } from "./module/roles/role.harvester";
-import { getCreepNum } from "./utils";
-import { UpgraderMethods } from "./module/roles/role.upgrader";
-import { configs } from "./config"
-import { addPrototypeExtension } from "./module/prototype_extension/extension"
-import { MemoryController } from "./module/memory/memoryController"
+import { extensionModule } from "./interface/extension.module";
+import { MemoryController } from "./module/memory/memoryController";
+import { configs } from "./config";
+import { worldStateModule } from "./interface/world_state.module";
+import { actModule } from "./interface/act.module";
+
+
 
 
 console.log(`==============================================`);
 console.log(`Global Reset  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
 console.log(`==============================================`);
+
 global.ticksFromLastReset = 0;
-addPrototypeExtension();
+extensionModule.addPrototypeExtension();
 MemoryController.removeDeadCreepMemory();
+const roleList: Role[] = configs.roleList;
+
+
+export const loop = function() {
+    console.log(`==================================================tick: ${Game.time}`);
+
+    for (let role of roleList) {
+        const creepsOfRole = worldStateModule.getAllMyCreepsWithRole(role.roleName);
+        if (role.creepNum > creepsOfRole.length) {
+            const spawn = worldStateModule.getAllMySpawnsWithFilter()[0];
+            const spawnCode = spawn.spawnCreepFromType(role.creepType, undefined, {
+                memory: {
+                    type: role.creepType,
+                    role: {
+                        roleName: role.roleName,
+                    }
+                }
+            });
+            console.log(`Spawn type [${role.creepType.name}] for role [${role.roleName}]: [${spawnCode}]`);
+        }
+
+        for (let creep of creepsOfRole) {
+            role.runRole(creep);
+            actModule.work(creep);
+        }
+
+    }
+
+    console.log(`Ticks from last global reset: ${global.ticksFromLastReset}`);
+    global.ticksFromLastReset++;
+    console.log(`================================================================`);
+}
 
 
 
 // export const loop = errorMapper(() => {
 
 // })
-
-export const loop = function() {
-    console.log(`================================tick: ${Game.time}`);
-    var mySpawn1: MySpawn = new MySpawn("Spawn1");
-    var remainingEnergy = mySpawn1.getStore()[RESOURCE_ENERGY];
-
-    var harvesterNum = getCreepNum(creepTypeNames.harvester);
-    console.log(`Harvesters: ${harvesterNum}`);
-    var upgraderNum = getCreepNum(creepTypeNames.upgrader);
-    console.log(`Upgraders: ${upgraderNum}`);
-    console.log(`${mySpawn1.name} Remaining Energy: ${remainingEnergy}`);
-
-    if (remainingEnergy) {
-        if(harvesterNum < configs.role_management.harvester.num) {
-            console.log("Try to spawn a harvest.");
-            mySpawn1.spawnCreep(harvester);
-        } else if(upgraderNum < configs.role_management.upgrader.num) {
-            console.log("Try to spawn an upgrader.");
-            mySpawn1.spawnCreep(upgrader);
-        }
-        
-    }
-    var sources = mySpawn1.spawn.room.find(FIND_SOURCES);
-    for (var name in Game.creeps) {
-        var creep = Game.creeps[name];
-        if (creep.memory.role == creepTypeNames.harvester) {
-            HarvesterMethods.run(creep, sources[0], configs.reuse_path);
-        } else if(creep.memory.role == creepTypeNames.upgrader) {
-            UpgraderMethods.run(creep, sources[1], configs.reuse_path);
-        }
-    }
-
-    console.log(`Ticks from last global reset: ${global.ticksFromLastReset}`);
-    global.ticksFromLastReset++;
-    console.log(`==============================================`);
-}

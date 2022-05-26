@@ -23,15 +23,12 @@ declare global {
         }
     }
         
-    interface Act {
+    interface Act extends ActOpts {
         /**
          * 动作名称
          */
         actType: ActTypes,
         token: string,
-        resourceObjId?: Id<AnyResourceObj>,
-        storeId?: Id<AnyStoreStructure>,
-        constructionSiteId?: Id<ConstructionSite>,
         threshold?: number,
 
         /**
@@ -60,6 +57,8 @@ declare global {
         resourceObjId?: Id<AnyResourceObj>,
         storeId?: Id<AnyStoreStructure>,
         constructionSiteId?: Id<ConstructionSite>,
+        structureId?: Id<Structure>,
+        creepId?: Id<Creep>,
 
         resourceType?: ResourceConstant,
         times?: number,

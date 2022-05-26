@@ -2,7 +2,7 @@ import { ActTypes, ReturnCode } from "@/const";
 
 declare global {
     interface ActModuleContext {
-
+        worldStateModule: WorldStateModule
     }
     
     interface ActModule {
@@ -20,6 +20,8 @@ declare global {
         withdrawResource(this: ActModule, creep: Creep, storeId: Id<AnyStoreStructure>, resourceType: ResourceConstant, amount?: number, moveToOpts?: MoveToOpts): ReturnCode;
 
         buildConstruction(this: ActModule, creep: Creep, constructionSiteId: Id<ConstructionSite>, times?: number, moveToOpts?: MoveToOpts): ReturnCode;
+        
+        repairStructure(this: ActModule, creep: Creep, structureId: Id<Structure>, times?: number, moveToOpts?: MoveToOpts): ReturnCode;
         
         _getAct(actType: ActTypes, actOpts: ActOpts): Act;
 

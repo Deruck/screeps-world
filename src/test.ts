@@ -1,42 +1,47 @@
+import { spawn } from "child_process";
+import { configs } from "./config";
 import { CreepTypeNames } from "./const";
 import { actModule } from "./interface/act.module";
 import { creepTypeModule } from "./interface/creep_type.module";
 import { extensionModule } from "./interface/extension.module";
+import { globalMemoryModule } from "./interface/memory.global.module";
 import { taskModule } from "./interface/task.module";
+import { worldStateModule } from "./interface/world_state.module";
+import { MemoryController } from "./module/memory/memoryController";
+import { actTest } from "./tests/act_test";
 
 // import { taskTypes } from "./module/task/task";
 
 extensionModule.addPrototypeExtension();
+MemoryController.removeDeadCreepMemory();
 
-const starter = creepTypeModule.getCreepType(
-    CreepTypeNames.STARTER,
-    {
-        work: 1,
-        move: 2,
-        carry: 2
-    }
-)
+const roleList: Role[] = configs.roleList;
 
 
 export const loop = function () {
     console.log("=============================================================");
-    const spawn1 = Game.spawns["Spawn1"];
-    console.log(starter.bodyParts);
-    console.log(starter.cost);
-    console.log([WORK, MOVE, MOVE, CARRY, CARRY]);
+    
+    for (let role of roleList) {
+        const creepsOfRole = worldStateModule.getAllMyCreepsWithRole(role.roleName);
+        if (role.creepNum > creepsOfRole.length) {
+            const spawn = worldStateModule.getAllMySpawnsWithFilter()[0];
+            const spawnCode = spawn.spawnCreepFromType(role.creepType, undefined, {
+                memory: {
+                    type: role.creepType,
+                    role: {
+                        roleName: role.roleName,
+                    }
+                }
+            });
+            console.log(`Spawn type [${role.creepType.name}] for role [${role.roleName}]: [${spawnCode}]`);
+        }
 
-    console.log("spawning: " + spawn1.spawnCreepFromType(starter, 20));
+        for (let creep of creepsOfRole) {
+            role.runRole(creep);
+            actModule.work(creep);
+        }
 
-    // const creep1 = Game.creeps["creep1"];
-    // // @ts-ignore
-    // const storage: StructureStorage = creep1.room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_STORAGE } })[0];
-    // var source = creep1.room.find(FIND_SOURCES)[0];
-    // const constructionSite: ConstructionSite = creep1.room.find(FIND_MY_CONSTRUCTION_SITES)[0];
-
-    // console.log(`Harvest to Store: ${taskModule.harvestToStore(creep1, source.id, storage.id, RESOURCE_ENERGY)}`);
-
-    // console.log("task work: " + JSON.stringify(taskModule.work(creep1)));
-    // console.log("act work: " + JSON.stringify(actModule.work(creep1)));
+    }
     console.log("=============================================================");
 }
 

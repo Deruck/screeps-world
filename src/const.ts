@@ -17,7 +17,8 @@ export enum ActTypes {
     STORE_RESOURCE = "storeResource",
     UPGRADE = "upgrade",
     WITHDRAW_RESOURCE = "withdrawResource",
-    BUILD_CONSTRUCTION = "buildConstruction"
+    BUILD_CONSTRUCTION = "buildConstruction",
+    REPAIR_STRUCTURE = "repairStructure"
 }
 
 export const defaultMoveToOpts: MoveToOpts = {
@@ -41,6 +42,17 @@ export enum Emoji {
     END = "⏹",
 }
 
+export enum Color {
+    HARVEST = "#b2bec3",
+    STORE = "#fdcb6e",
+    WITHDRAW = "#ffeaa7",
+    BUILD = "#0984e3",
+    UPGRADE = "#81ecec",
+    REPAIR = "#74b9ff",
+    HEAL = "#55efc4",
+    ATTACK = "#d63031",
+}
+
 export enum CreepTypeNames {
     /**初始类型，用于初始建设的全能角色 */
     STARTER = "starter",
@@ -59,4 +71,5 @@ export enum CreepTypeNames {
 declare global {
     type AnyResourceObj = Source | Mineral | Deposit;
     type AnyResourceObjId = Id<Source> | Id<Mineral> | Id<Deposit>;
+
 }

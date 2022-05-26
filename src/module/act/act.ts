@@ -1,6 +1,7 @@
-import { ReturnCode, ActTypes } from "@/const";
+import { ReturnCode, ActTypes, Color, Emoji } from "@/const";
 
-export const createActModule = function (context: ActModuleContext): ActModule {
+export const createActModule = function (ctx: ActModuleContext): ActModule {
+    const worldStateModule = ctx.worldStateModule
     const work = function (this: ActModule, creep: Creep): ActWorkReturn {
         if (!creep.memory.act) {
             this._resetActMemory(creep);
@@ -58,30 +59,43 @@ export const createActModule = function (context: ActModuleContext): ActModule {
         })
     };
 
+    const repairStructure = function (this: ActModule, creep: Creep, structureId: Id<Structure>, times?: number, moveToOpts?: MoveToOpts): ReturnCode {
+        return this._completeAct(creep, ActTypes.REPAIR_STRUCTURE, {
+            structureId: structureId,
+            moveToOpts: moveToOpts,
+            times: times
+        })
+    };
+
+
 
     const _createHarvestResource: ActCreator = function (actOpts) {
         return {
             actType: ActTypes.HARVEST_RESOURCE,
             token: actOpts.resourceObjId,
             resourceObjId: actOpts.resourceObjId,
+            moveToOpts: actOpts.moveToOpts ? actOpts.moveToOpts : {
+                reusePath: 5,
+                visualizePathStyle: {stroke: Color.HARVEST}
+            },
 
             
             check(creep: Creep) {
-                const resourceObj = Game.getObjectById(this.resourceObjId);
-                const ifCreepCap = creep.store.getFreeCapacity() > 0; 
+                const resourceObj = worldStateModule.getObjectById(this.resourceObjId);
                 // @ts-ignore
                 if (resourceObj.depositType) { 
                     // @ts-ignore
-                    var resourceType = resourceObj.depositType;
+                    this.resourceType = resourceObj.depositType;
                     // @ts-ignore
                 } else if (resourceObj.mineralType) {
                     // @ts-ignore
-                    var resourceType = resourceObj.mineralType;
+                    this.resourceType = resourceObj.mineralType;
                 } else {
-                    var resourceType = RESOURCE_ENERGY;
+                    this.resourceType = RESOURCE_ENERGY;
                 }
+                const ifCreepCap = creep.store.getFreeCapacity(this.resourceType) > 0; 
 
-                const ifCreepHaveResource = creep.store[resourceType] > 0;
+                const ifCreepHaveResource = creep.store[this.resourceType] > 0;
                 return ifCreepCap || ifCreepHaveResource;
             },
         
@@ -91,10 +105,10 @@ export const createActModule = function (context: ActModuleContext): ActModule {
             },
         
             exec(creep: Creep) {
-                const resourceObj = Game.getObjectById(actOpts.resourceObjId);
+                const resourceObj = worldStateModule.getObjectById(this.resourceObjId);
                 // 初始
                 if (creep.memory.act[this.actType] == 0) {
-                    if (creep.store.getFreeCapacity() <= 0) {
+                    if (creep.store.getFreeCapacity(this.resourceType) <= 0) {
                         return true;
                     } else {
                         creep.say(`🚴‍♀️`);
@@ -103,14 +117,14 @@ export const createActModule = function (context: ActModuleContext): ActModule {
                 }
                 // 去往source
                 if (creep.memory.act[this.actType] == 1) {
-                    if (creep.moveToTarget(resourceObj.pos, 1, actOpts.moveToOpts) == ReturnCode.DONE) {
+                    if (creep.moveToTarget(resourceObj.pos, 1, this.moveToOpts) == ReturnCode.DONE) {
                         creep.say(`⛏`);
                         creep.memory.act[this.actType] = 2;
                     }
                 }
                 // 开采
                 if (creep.memory.act[this.actType] == 2) {
-                    var freeCap = creep.store.getFreeCapacity();
+                    var freeCap = creep.store.getFreeCapacity(this.resourceType);
                     if (freeCap > 0) {
                         creep.harvest(resourceObj);
                     }
@@ -133,17 +147,24 @@ export const createActModule = function (context: ActModuleContext): ActModule {
         return {
             actType: ActTypes.STORE_RESOURCE,
             token: actOpts.storeId,
+
             storeId: actOpts.storeId,
+            resourceType: actOpts.resourceType,
+            amount: actOpts.amount,
+            moveToOpts: actOpts.moveToOpts ? actOpts.moveToOpts : {
+                reusePath: 5,
+                visualizePathStyle: {stroke: Color.STORE}
+            },
         
             check(creep: Creep) {
-                const store = Game.getObjectById(this.storeId);
-                const ifCreepHaveEnergy = actOpts.amount ?
-                    creep.store[actOpts.resourceType] >= actOpts.amount : 
-                    creep.store[actOpts.resourceType] > 0;
-                const ifStoreHaveCap = actOpts.amount ? 
-                    store.store.getFreeCapacity() >= actOpts.amount :
-                    store.store.getFreeCapacity() > 0
-                const ifResourceType = Boolean(creep.store[actOpts.resourceType]);
+                const store = worldStateModule.getObjectById(this.storeId);
+                const ifCreepHaveEnergy = this.amount ?
+                    creep.store[this.resourceType] >= this.amount : 
+                    creep.store[this.resourceType] > 0;
+                const ifStoreHaveCap = this.amount ? 
+                    store.store.getFreeCapacity(this.resourceType) >= this.amount :
+                    store.store.getFreeCapacity(this.resourceType) > 0
+                const ifResourceType = Boolean(creep.store[this.resourceType]);
                 return ifCreepHaveEnergy && ifStoreHaveCap && ifResourceType;
             },
         
@@ -153,7 +174,7 @@ export const createActModule = function (context: ActModuleContext): ActModule {
             },
         
             exec(creep: Creep) {
-                const store = Game.getObjectById(this.storeId);
+                const store = worldStateModule.getObjectById(this.storeId);
                 // 初始
                 if (creep.memory.act[this.actType] == 0) {
                     creep.say(`🚴‍♀️`);
@@ -161,17 +182,17 @@ export const createActModule = function (context: ActModuleContext): ActModule {
                 }
                 // 去往store
                 if (creep.memory.act[this.actType] == 1) {
-                    if (creep.moveToTarget(store.pos, 1, actOpts.moveToOpts) == ReturnCode.DONE) {
+                    if (creep.moveToTarget(store.pos, 1, this.moveToOpts) == ReturnCode.DONE) {
                         creep.say(`🔄`);
                         creep.memory.act[this.actType] = 2;
                     }
                 }
                 // transfer
                 if (creep.memory.act[this.actType] == 2) {
-                    const amount = actOpts.amount ? 
-                        actOpts.amount : 
-                        Math.min(store.store.getFreeCapacity(), creep.store[actOpts.resourceType]);
-                    const code = creep.transfer(store, actOpts.resourceType, amount);
+                    const amount = this.amount ? 
+                    this.amount : 
+                        Math.min(store.store.getFreeCapacity(this.resourceType), creep.store[this.resourceType]);
+                    const code = creep.transfer(store, this.resourceType, amount);
                     if (code == OK) {
                         creep.say(`🔄✅`);
                     } else {
@@ -188,10 +209,10 @@ export const createActModule = function (context: ActModuleContext): ActModule {
             },
     
             break_condition(creep) {
-                const store = Game.getObjectById(this.storeId);
-                var ifStoreCap = actOpts.amount ?
-                    store.store.getFreeCapacity() > actOpts.amount :
-                    store.store.getFreeCapacity() > 0;
+                const store = worldStateModule.getObjectById(this.storeId);
+                var ifStoreCap = this.amount ?
+                    store.store.getFreeCapacity(this.resourceType) > this.amount :
+                    store.store.getFreeCapacity(this.resourceType) > 0;
                     
                 return ifStoreCap;
             }
@@ -202,6 +223,12 @@ export const createActModule = function (context: ActModuleContext): ActModule {
         return {
             actType: ActTypes.UPGRADE,
             token: "",
+
+            times: actOpts.times,
+            moveToOpts: actOpts.moveToOpts ? actOpts.moveToOpts : {
+                reusePath: 5,
+                visualizePathStyle: {stroke: Color.UPGRADE}
+            },
         
             check(creep: Creep) {
                 var ifHaveEnergy = creep.store[RESOURCE_ENERGY] > 0;
@@ -221,16 +248,16 @@ export const createActModule = function (context: ActModuleContext): ActModule {
                 }
                 // 去往controller
                 if (creep.memory.act[this.actType] == 1) {
-                    if (creep.moveToTarget(creep.room.controller.pos, 3, actOpts.moveToOpts) == ReturnCode.DONE) {
+                    if (creep.moveToTarget(creep.room.controller.pos, 3, this.moveToOpts) == ReturnCode.DONE) {
                         creep.say(`🆙`);
                         creep.memory.act[this.actType] = 2;
                     }
                 }
                 // upgrade
                 if (creep.memory.act[this.actType] == 2) {
-                    if (actOpts.times) {
+                    if (this.times) {
                         var times = creep.memory.act.times === undefined ?
-                        actOpts.times : creep.memory.act.times;
+                        this.times : creep.memory.act.times;
                         const energy = creep.store[RESOURCE_ENERGY];
                         if (energy > 0 && times > 0) {
                             creep.upgradeController(creep.room.controller);
@@ -277,11 +304,17 @@ export const createActModule = function (context: ActModuleContext): ActModule {
 
             storeId: actOpts.storeId,
             threshold: actOpts.amount ? actOpts.amount : 1,
-        
+            resourceType: actOpts.resourceType,
+            amount: actOpts.amount,
+            moveToOpts: actOpts.moveToOpts ? actOpts.moveToOpts : {
+                reusePath: 5,
+                visualizePathStyle: {stroke: Color.WITHDRAW}
+            },
+            
             check(creep: Creep) {
-                const store = Game.getObjectById(this.storeId);
-                const ifCreepHaveCap = creep.store.getFreeCapacity() >= this.threshold;
-                const ifStoreHaveResource = store.store[actOpts.resourceType] >= this.threshold;
+                const store = worldStateModule.getObjectById(this.storeId);
+                const ifCreepHaveCap = creep.store.getFreeCapacity(this.resourceType) >= this.threshold;
+                const ifStoreHaveResource = store.store[this.resourceType] >= this.threshold;
                 if (!ifCreepHaveCap) {
                     creep.actLog(`creep does not have enough free energy.`);
                 }
@@ -297,7 +330,7 @@ export const createActModule = function (context: ActModuleContext): ActModule {
             },
         
             exec(creep: Creep) {
-                const store = Game.getObjectById(this.storeId);
+                const store = worldStateModule.getObjectById(this.storeId);
                 // 初始
                 if (creep.memory.act[this.actType] == 0) {
                     creep.say(`🚴‍♀️`);
@@ -305,16 +338,16 @@ export const createActModule = function (context: ActModuleContext): ActModule {
                 }
                 // 去往store
                 if (creep.memory.act[this.actType] == 1) {
-                    if (creep.moveToTarget(store.pos, 1, actOpts.moveToOpts) == ReturnCode.DONE) {
+                    if (creep.moveToTarget(store.pos, 1, this.moveToOpts) == ReturnCode.DONE) {
                         creep.say(`🔄`);
                         creep.memory.act[this.actType] = 2;
                     }
                 }
                 // withdraw
                 if (creep.memory.act[this.actType] == 2) {
-                    var amount = actOpts.amount ? actOpts.amount :
-                        Math.min(creep.store.getFreeCapacity(), store[actOpts.resourceType]);
-                    const code = creep.withdraw(store, actOpts.resourceType, amount);
+                    var amount = this.amount ? this.amount :
+                        Math.min(creep.store.getFreeCapacity(this.resourceType), store[this.resourceType]);
+                    const code = creep.withdraw(store, this.resourceType, amount);
                     if (code == OK) {
                         creep.say(`🔄✅`);
                     } else {
@@ -338,6 +371,11 @@ export const createActModule = function (context: ActModuleContext): ActModule {
             token: actOpts.constructionSiteId,
 
             constructionSiteId: actOpts.constructionSiteId,
+            times: actOpts.times,
+            moveToOpts: actOpts.moveToOpts ? actOpts.moveToOpts : {
+                reusePath: 5,
+                visualizePathStyle: {stroke: Color.BUILD}
+            },
         
             check(creep: Creep) {
                 var ifHaveEnergy = creep.store[RESOURCE_ENERGY] > 0;
@@ -350,7 +388,7 @@ export const createActModule = function (context: ActModuleContext): ActModule {
             },
         
             exec(creep: Creep) {
-                const constructionSite = Game.getObjectById(this.constructionSiteId);
+                const constructionSite = worldStateModule.getObjectById(this.constructionSiteId);
                 // 初始
                 if (creep.memory.act[this.actType] == 0) {
                     creep.say(`🚴‍♀️`);
@@ -358,16 +396,16 @@ export const createActModule = function (context: ActModuleContext): ActModule {
                 }
                 // 去往constructionSite
                 if (creep.memory.act[this.actType] == 1) {
-                    if (creep.moveToTarget(constructionSite.pos, 3, actOpts.moveToOpts) == ReturnCode.DONE) {
+                    if (creep.moveToTarget(constructionSite.pos, 3, this.moveToOpts) == ReturnCode.DONE) {
                         creep.say(`🧱`);
                         creep.memory.act[this.actType] = 2;
                     }
                 }
                 // build
                 if (creep.memory.act[this.actType] == 2) {
-                    if (actOpts.times) {
+                    if (this.times) {
                         var times = creep.memory.act.times === undefined ?
-                            actOpts.times : creep.memory.act.times;
+                            this.times : creep.memory.act.times;
                         const energy = creep.store[RESOURCE_ENERGY];
                         if (energy > 0 && times > 0) {
                             creep.build(constructionSite);
@@ -382,7 +420,7 @@ export const createActModule = function (context: ActModuleContext): ActModule {
                     } else {
                         var energy = creep.store[RESOURCE_ENERGY];
                         if (energy > 0) {
-                            creep.upgradeController(creep.room.controller);
+                            creep.build(constructionSite);
                         }
                         if (energy <= 0) {
                             creep.say(`🧱✅`);
@@ -401,11 +439,93 @@ export const createActModule = function (context: ActModuleContext): ActModule {
             },
     
             break_condition(creep) {
-                const constructionSite = Game.getObjectById(this.constructionSiteId);
-                const ifSiteExist = (constructionSite !== undefined);
+                const constructionSite = worldStateModule.getObjectById(this.constructionSiteId);
+                const ifSiteExist = Boolean(constructionSite);
                 if (!ifSiteExist) creep.actLog(`construction site does not exist`);
                 const ifCreepHaveEnergy = (creep.store[RESOURCE_ENERGY] > 0);
                 return ifSiteExist && ifCreepHaveEnergy;
+            }
+        }
+    }
+
+    const _createRepairStructure: ActCreator = function (actOpts) {
+        return {
+            actType: ActTypes.REPAIR_STRUCTURE,
+            token: actOpts.structureId,
+
+            structureId: actOpts.structureId,
+            times: actOpts.times,
+            moveToOpts: actOpts.moveToOpts ? actOpts.moveToOpts : {
+                reusePath: 5,
+                visualizePathStyle: {stroke: Color.REPAIR}
+            },
+        
+            check(creep: Creep) {
+                var ifHaveEnergy = creep.store[RESOURCE_ENERGY] > 0;
+                return ifHaveEnergy;
+            },
+        
+            prepare(creep: Creep) {
+                creep.memory.act[this.actType] = 0;
+                return true;
+            },
+        
+            exec(creep: Creep) {
+                const structure = worldStateModule.getObjectById(this.structureId);
+                // 初始
+                if (creep.memory.act[this.actType] == 0) {
+                    creep.say(`🚴‍♀️`);
+                    creep.memory.act[this.actType] = 1;
+                }
+                // 去往structure
+                if (creep.memory.act[this.actType] == 1) {
+                    if (creep.moveToTarget(structure.pos, 3, this.moveToOpts) == ReturnCode.DONE) {
+                        creep.say(Emoji.REPAIR);
+                        creep.memory.act[this.actType] = 2;
+                    }
+                }
+                // build
+                if (creep.memory.act[this.actType] == 2) {
+                    if (this.times) {
+                        var times = creep.memory.act.times === undefined ?
+                            this.times : creep.memory.act.times;
+                        const energy = creep.store[RESOURCE_ENERGY];
+                        if (energy > 0 && times > 0) {
+                            creep.repair(structure);
+                        }
+                        // console.log(times);
+                        times--;
+                        if (energy <= 0 || times <= 0) {
+                            creep.say(Emoji.REPAIR + Emoji.SUCCESS);
+                            return true;
+                        }
+                        creep.memory.act.times = times;
+                    } else {
+                        var energy = creep.store[RESOURCE_ENERGY];
+                        if (energy > 0) {
+                            creep.repair(structure);
+                        }
+                        if (energy <= 0) {
+                            creep.say(Emoji.REPAIR + Emoji.SUCCESS);
+                            return true;
+                        }
+                    }
+                    
+                    
+                }
+                return false;
+            },
+        
+            end(creep) {
+                delete creep.memory.act[this.actType];
+                return true;
+            },
+    
+            break_condition(creep) {
+                const structure = worldStateModule.getObjectById(this.structureId)
+                const ifNeedRepair = structure.hits < structure.hitsMax;
+                const ifCreepHaveEnergy = (creep.store[RESOURCE_ENERGY] > 0);
+                return ifNeedRepair && ifCreepHaveEnergy;
             }
         }
     }
@@ -416,6 +536,7 @@ export const createActModule = function (context: ActModuleContext): ActModule {
         [ActTypes.UPGRADE, _createUpgrade],
         [ActTypes.WITHDRAW_RESOURCE, _createWithdrawResource],
         [ActTypes.BUILD_CONSTRUCTION, _createBuildConstruction],
+        [ActTypes.REPAIR_STRUCTURE, _createRepairStructure]
     ])
 
     const _completeAct = function (this: ActModule, creep: Creep, actType: ActTypes, actOpts: ActOpts): ReturnCode {
@@ -436,7 +557,7 @@ export const createActModule = function (context: ActModuleContext): ActModule {
         ) {
             return this._runAct(creep);
         } else {
-            creep.actLog(`creep is running another act now.`);
+            // creep.actLog(`creep is running another act [${creep.memory.act.actType}] now.`);
             return ReturnCode.BUSY;
         }
     }
@@ -462,6 +583,14 @@ export const createActModule = function (context: ActModuleContext): ActModule {
                 return ReturnCode.FAILED; 
             }
         }
+        // check break condition
+        if (Boolean(act.break_condition) && [1, 2].includes(creep.memory.act.status)) {
+            if (!act.break_condition(creep)) {
+                creep.say(`❗⏹`);
+                // creep.actLog(`act break.`);
+                creep.memory.act.status = 3;
+            }
+        }
         // prepare
         if (creep.memory.act.status == 1) {
             if (act.prepare(creep)) {
@@ -471,14 +600,6 @@ export const createActModule = function (context: ActModuleContext): ActModule {
         // exec
         if (creep.memory.act.status == 2) {
             if (act.exec(creep)) {
-                creep.memory.act.status = 3;
-            }
-        }
-        // check break condition
-        if (Boolean(act.break_condition) && [1, 2].includes(creep.memory.act.status)) {
-            if (!act.break_condition(creep)) {
-                creep.say(`❗⏹`);
-                creep.actLog(`act break.`);
                 creep.memory.act.status = 3;
             }
         }
@@ -511,6 +632,7 @@ export const createActModule = function (context: ActModuleContext): ActModule {
         upgrade: upgrade,
         withdrawResource: withdrawResource,
         buildConstruction: buildConstruction,
+        repairStructure: repairStructure,
         _getAct: _getAct,
         _actCreatorMenu: _actCreatorMenu,
         _runAct: _runAct,

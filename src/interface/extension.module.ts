@@ -1,6 +1,6 @@
 import { createExtensionModule } from "@/module/prototype_extension/extension";
-import { createCreepExtensionModule } from "@/module/prototype_extension/creep.extension";
-import { createSpawnExtensionModule } from "@/module/prototype_extension/spawn.extension";
+import { createCreepExtensionModule } from "@/module/prototype_extension/extension.creep";
+import { createSpawnExtensionModule } from "@/module/prototype_extension/extension.spawn";
 
 const creepExtensionModule = createCreepExtensionModule({
 

@@ -7,7 +7,7 @@ export const createSpawnExtensionModule = function (ctx: SpawnExtensionModuleCon
      *****************************************************************************************/
     const spawnExtension: SpawnExtension = {
         spawnCreepFromType(creepType: CreepType, id?: string | number, spawnOpts?: SpawnOptions): ReturnCode {
-            if (this.store[RESOURCE_ENERGY] < creepType.cost) {
+            if (this.room.energyAvailable < creepType.cost) {
                 return ReturnCode.FAILED;
             }
             id = id ? id : Game.time;
