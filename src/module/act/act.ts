@@ -75,7 +75,7 @@ export const createActModule = function (ctx: ActModuleContext): ActModule {
             token: actOpts.resourceObjId,
             resourceObjId: actOpts.resourceObjId,
             moveToOpts: actOpts.moveToOpts ? actOpts.moveToOpts : {
-                reusePath: 5,
+                reusePath: global.reusePath,
                 visualizePathStyle: {stroke: Color.HARVEST}
             },
 
@@ -152,7 +152,7 @@ export const createActModule = function (ctx: ActModuleContext): ActModule {
             resourceType: actOpts.resourceType,
             amount: actOpts.amount,
             moveToOpts: actOpts.moveToOpts ? actOpts.moveToOpts : {
-                reusePath: 5,
+                reusePath: global.reusePath,
                 visualizePathStyle: {stroke: Color.STORE}
             },
         
@@ -226,7 +226,7 @@ export const createActModule = function (ctx: ActModuleContext): ActModule {
 
             times: actOpts.times,
             moveToOpts: actOpts.moveToOpts ? actOpts.moveToOpts : {
-                reusePath: 5,
+                reusePath: global.reusePath,
                 visualizePathStyle: {stroke: Color.UPGRADE}
             },
         
@@ -307,7 +307,7 @@ export const createActModule = function (ctx: ActModuleContext): ActModule {
             resourceType: actOpts.resourceType,
             amount: actOpts.amount,
             moveToOpts: actOpts.moveToOpts ? actOpts.moveToOpts : {
-                reusePath: 5,
+                reusePath: global.reusePath,
                 visualizePathStyle: {stroke: Color.WITHDRAW}
             },
             
@@ -373,7 +373,7 @@ export const createActModule = function (ctx: ActModuleContext): ActModule {
             constructionSiteId: actOpts.constructionSiteId,
             times: actOpts.times,
             moveToOpts: actOpts.moveToOpts ? actOpts.moveToOpts : {
-                reusePath: 5,
+                reusePath: global.reusePath,
                 visualizePathStyle: {stroke: Color.BUILD}
             },
         
@@ -456,7 +456,7 @@ export const createActModule = function (ctx: ActModuleContext): ActModule {
             structureId: actOpts.structureId,
             times: actOpts.times,
             moveToOpts: actOpts.moveToOpts ? actOpts.moveToOpts : {
-                reusePath: 5,
+                reusePath: global.reusePath,
                 visualizePathStyle: {stroke: Color.REPAIR}
             },
         

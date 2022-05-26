@@ -4,6 +4,7 @@ import { configs } from "./config";
 import { worldStateModule } from "./interface/world_state.module";
 import { actModule } from "./interface/act.module";
 import { ReturnCode } from "./const";
+import { globalMemoryModule } from "./interface/memory.global.module";
 
 
 
@@ -13,6 +14,7 @@ console.log(`Global Reset  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
 console.log(`==============================================`);
 
 global.ticksFromLastReset = 0;
+global.reusePath = 3;
 extensionModule.addPrototypeExtension();
 MemoryController.removeDeadCreepMemory();
 const roleList: Role[] = configs.roleList;
@@ -50,6 +52,7 @@ export const loop = function() {
 
     }
 
+    globalMemoryModule.resetCache();
     global.ticksFromLastReset++;
     console.log(`================================================================`);
 }

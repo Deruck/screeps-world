@@ -13,7 +13,7 @@ interface WorldStateModule {
 
     getAllMySpawnsWithFilter(this: WorldStateModule, filter?: (spawn: StructureSpawn) => boolean): StructureSpawn[];
 
-    getAllMyConstructionSiteWithFilter(this: WorldStateModule, room: Room, filter?: (spawn: StructureSpawn) => boolean): ConstructionSite[];
+    getAllMyConstructionSiteWithFilter(this: WorldStateModule, room: Room, filter?: (constructionSite: ConstructionSite) => boolean): ConstructionSite[];
 
     getAllSourcesInRoom(this: WorldStateModule, room: Room): Source[];
 

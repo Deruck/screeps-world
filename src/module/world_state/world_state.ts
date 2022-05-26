@@ -55,14 +55,18 @@ export const createWorldStateModule = function (ctx: WorldStateModuleContext): W
                 return closestConstructionSite;
             }
         }
-        var closestConstructionSite = creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES);
+        var closestConstructionSite = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES, {
+            filter: (structure: Structure) =>
+            // @ts-ignore
+            (structure.my === undefined || structure.my == true)
+        });
         closestConstructionSiteId = closestConstructionSite.id;
         creep.actLog(`find closest construction [${closestConstructionSiteId}]`);
         creep.memory.worldState.closestConstructionSiteId = closestConstructionSiteId;
         return closestConstructionSite;
     };
 
-    const getAllMyConstructionSiteWithFilter = function (this: WorldStateModule, room: Room, filter?: (spawn: StructureSpawn) => boolean): ConstructionSite[] {
+    const getAllMyConstructionSiteWithFilter = function (this: WorldStateModule, room: Room, filter?: (constructionSite: ConstructionSite) => boolean): ConstructionSite[] {
         return room.find(FIND_MY_CONSTRUCTION_SITES, { filter: filter });
     };
 
@@ -92,7 +96,7 @@ export const createWorldStateModule = function (ctx: WorldStateModuleContext): W
             }
         }
         //@ts-ignore
-        var closestAvailableStore: AnyStoreStructure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+        var closestAvailableStore: AnyStoreStructure = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {
              //@ts-ignore
             filter: (structure: AnyStructure) => structure.store && structure.store.getFreeCapacity(resourceType) > 0
         });
@@ -108,7 +112,9 @@ export const createWorldStateModule = function (ctx: WorldStateModuleContext): W
             structures = room.find(FIND_STRUCTURES, {
                 filter: (structure: Structure) =>
                     // @ts-ignore
-                    (structure.my === undefined || structure.my == true) && structure.hits / structure.hitsMax < threshold
+                    (structure.my === undefined || structure.my == true) &&
+                    structure.hits / structure.hitsMax < threshold &&
+                    structure.structureType != STRUCTURE_WALL
             })
             ctx.globalMemoryModule.putRepairStructureToCache(room, structures);
         }
@@ -126,10 +132,12 @@ export const createWorldStateModule = function (ctx: WorldStateModuleContext): W
                 return closestRepairStructure;
             }
         }
-        var closestRepairStructure = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+        var closestRepairStructure = creep.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure: Structure) =>
                     // @ts-ignore
-                    (structure.my === undefined || structure.my == true) && structure.hits / structure.hitsMax < threshold
+                    (structure.my === undefined || structure.my == true) &&
+                    structure.hits / structure.hitsMax < threshold &&
+                    structure.structureType != STRUCTURE_WALL
         });
         closestRepairStructureId = closestRepairStructure.id;
         creep.actLog(`find closest repair structure [${closestRepairStructureId}]`);
