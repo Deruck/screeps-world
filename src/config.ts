@@ -16,7 +16,7 @@ const starter = creepTypeModule.getCreepType(
 
 const starter0: Role = {
     roleName: "starter: harvest(source0) -> [store(spawn | extension) > repair > build > upgrade] ",
-    creepNum: 8,
+    creepNum: 5,
     creepType: starter,
     runRole(creep) {
         const source = worldStateModule.getAllSourcesInRoom(creep.room)[0];
@@ -97,7 +97,7 @@ const upgrader: Role = {
     creepNum: 1,
     creepType: starter,
     runRole(creep) {
-        const source = worldStateModule.getAllSourcesInRoom(creep.room)[0];
+        const source = worldStateModule.getAllSourcesInRoom(creep.room)[1];
         if (creep.store[RESOURCE_ENERGY] == 0) {
             actModule.harvestResource(creep, source.id);
         } else {
@@ -108,5 +108,5 @@ const upgrader: Role = {
 
 
 export const configs = {
-    roleList: [starter0, starter1, upgrader]
+    roleList: [starter0, upgrader, starter1]
 }

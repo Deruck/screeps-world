@@ -3,6 +3,7 @@ import { MemoryController } from "./module/memory/memoryController";
 import { configs } from "./config";
 import { worldStateModule } from "./interface/world_state.module";
 import { actModule } from "./interface/act.module";
+import { ReturnCode } from "./const";
 
 
 
@@ -18,21 +19,28 @@ const roleList: Role[] = configs.roleList;
 
 
 export const loop = function() {
-    console.log(`==================================================tick: ${Game.time}`);
-
+    console.log(`======================================tick: ${Game.time}, reset: ${global.ticksFromLastReset}`);
+    let ifPreRoleHaveMeetCreepNumber: boolean = true;
     for (let role of roleList) {
         const creepsOfRole = worldStateModule.getAllMyCreepsWithRole(role.roleName);
-        if (role.creepNum > creepsOfRole.length) {
-            const spawn = worldStateModule.getAllMySpawnsWithFilter()[0];
-            const spawnCode = spawn.spawnCreepFromType(role.creepType, undefined, {
-                memory: {
-                    type: role.creepType,
-                    role: {
-                        roleName: role.roleName,
+        if (ifPreRoleHaveMeetCreepNumber) {
+            if (role.creepNum > creepsOfRole.length) {
+                ifPreRoleHaveMeetCreepNumber = false;
+                const spawn = worldStateModule.getAllMySpawnsWithFilter()[0];
+                const spawnCode = spawn.spawnCreepFromType(role.creepType, undefined, {
+                    memory: {
+                        type: role.creepType,
+                        role: {
+                            roleName: role.roleName,
+                        }
                     }
+                });
+                if (spawnCode == ReturnCode.SUCCESS) {
+                    console.log(`Spawn type [${role.creepType.name}] for role [${role.roleName}]: [${spawnCode}]`);
                 }
-            });
-            console.log(`Spawn type [${role.creepType.name}] for role [${role.roleName}]: [${spawnCode}]`);
+            } else {
+                ifPreRoleHaveMeetCreepNumber = true;
+            }
         }
 
         for (let creep of creepsOfRole) {
@@ -42,7 +50,6 @@ export const loop = function() {
 
     }
 
-    console.log(`Ticks from last global reset: ${global.ticksFromLastReset}`);
     global.ticksFromLastReset++;
     console.log(`================================================================`);
 }
