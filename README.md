@@ -4,7 +4,7 @@
   - 实例、函数：小驼峰
 
 ## Todo
-- [ ] Role模块：任务模块前期简易替代品
+- [x] Role模块：任务模块前期简易替代品
   - 每一个Role都是一个creep在生命周期中重复做的事情，每一个creep的role不会改变
   - 通过人数、类型、逻辑来定义role，人数不够时由spawn孵化
 - [ ] Act模块：不可抢占的最小行为单位，一般为“移动去做某事”
@@ -14,7 +14,7 @@
   - [x] upgrade
   - [x] build
   - [x] withdraw
-  - [ ] repair
+  - [x] repair
   - [ ] attack
   - [ ] pull
   - [ ] ...
@@ -34,15 +34,15 @@
     - [ ] attack
 - [x] CreepType模块：管理creep类型
 - [ ] 全局信息模块：使用全局变量动态存储
-  - [ ] 当前拥有的所有creep
-  - [ ] 当前拥有的某个类型creep
-  - [ ] 当前地图中的资源
-  - [ ] 当前地图中的constructionsite
+  - [x] 当前拥有的所有creep
+  - [x] 当前拥有的某个类型creep
+  - [x] 当前地图中的资源
+  - [x] 当前地图中的constructionsite
   - [ ] ...
 - [ ] 事件模块：监控事件
 - [ ] loop管理模块：管理每个loop例行执行的工作
   - [ ] 动态生成主函数
-- [ ] 记忆管理模块？
+- [x] 记忆管理模块？
 - [ ] 任务管理模块：监控事件，为单位指派行为
   - [ ] creep数量管理
 - [ ] 整合模块，将小模块组装成大模块，类似CreepExtension -> Extention

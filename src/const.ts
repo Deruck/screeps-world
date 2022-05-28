@@ -51,6 +51,12 @@ export enum Color {
     REPAIR = "#74b9ff",
     HEAL = "#55efc4",
     ATTACK = "#d63031",
+
+    CARRIER = "#fed330",
+    WORKER = "#487eb0",
+    UPGRADER = "#55efc4",
+    HARVESTER = "#e58e26",
+    TRANSFERER = "#95a5a6"
 }
 
 export enum CreepTypeNames {
@@ -61,7 +67,8 @@ export enum CreepTypeNames {
     /**特化采集者，all in work， 每个source最多需要 容量/300/2 个work部件*/
     HARVESTER = "harvester",
     /**特化搬运者, 1move + 2carry, 主要在road上行走*/
-    CARRIER = "carrier"
+    CARRIER = "carrier",
+    TRANSFERER = "transferer",
 }
 
 /*****************************************************************************************

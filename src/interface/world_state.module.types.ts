@@ -3,27 +3,54 @@ interface WorldStateModuleContext {
 }
 
 interface WorldStateModule {
+    /*****************************************************************************************
+     * 
+     *****************************************************************************************/
     _resetCreepWorldStateMemory(this: WorldStateModule, creep: Creep): void;
 
     getObjectById<T extends _HasId>(this: WorldStateModule, id: Id<T>): T | null; 
 
-    getAllMyCreepsWithFilter(this: WorldStateModule, filter?: (creep: Creep) => boolean): Creep[];
+    /*****************************************************************************************
+     * 
+     *****************************************************************************************/
+
+    getAllMyCreeps(this: WorldStateModule, filter?: (creep: Creep) => boolean): Creep[];
 
     getAllMyCreepsWithRole(this: WorldStateModule, roleName: string): Creep[];
 
-    getAllMySpawnsWithFilter(this: WorldStateModule, filter?: (spawn: StructureSpawn) => boolean): StructureSpawn[];
+    /*****************************************************************************************
+     * 
+     *****************************************************************************************/
 
-    getAllMyConstructionSiteWithFilter(this: WorldStateModule, room: Room, filter?: (constructionSite: ConstructionSite) => boolean): ConstructionSite[];
+    getAllMySpawns(this: WorldStateModule, filter?: (spawn: StructureSpawn) => boolean): StructureSpawn[];
 
+    /*****************************************************************************************
+     * 
+     *****************************************************************************************/
+
+    getAllMyConstructionSites(this: WorldStateModule, room: Room, filter?: (constructionSite: ConstructionSite) => boolean): ConstructionSite[];
+
+    getMyClosestConstructionSite(this: WorldStateModule, creep: Creep, filter?: (constructionSite: ConstructionSite) => boolean): ConstructionSite;
+
+    /*****************************************************************************************
+     * 
+     *****************************************************************************************/
+    
     getAllSourcesInRoom(this: WorldStateModule, room: Room): Source[];
 
-    getMyClosestConstructionSite(this: WorldStateModule, creep: Creep): ConstructionSite;
+    /*****************************************************************************************
+     * 
+     *****************************************************************************************/
 
-    getClosestAvailableStore(this: WorldStateModule, creep: Creep, resourceType: ResourceConstant): AnyStoreStructure;
+    getClosestAvailableStore(this: WorldStateModule, creep: Creep, resourceType: ResourceConstant, includeTypes: StructureConstant[]): AnyStoreStructure;
 
-    getAllAvailableStore(this: WorldStateModule, room: Room, resourceType: ResourceConstant): AnyStoreStructure[];
+    getAllAvailableStores(this: WorldStateModule, room: Room, resourceType: ResourceConstant, includeTypes: StructureConstant[]): AnyStoreStructure[];
 
-    getRepairStructures(this: WorldStateModule, room: Room, threshold: number): Structure[];
+    /*****************************************************************************************
+     * 
+     *****************************************************************************************/
 
-    getClosestRepairStructure(this: WorldStateModule, creep: Creep, threshold: number): Structure;
+    getRepairStructures(this: WorldStateModule, room: Room, threshold: number, excludeTypes: StructureConstant[]): Structure[];
+
+    getClosestRepairStructure(this: WorldStateModule, creep: Creep, threshold: number, excludeTypes: StructureConstant[]): Structure;
 }

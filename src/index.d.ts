@@ -3,3 +3,13 @@ interface Memory {
     oneTimeExec: boolean,
 }
 
+interface CreepMemory {
+    renewed?: boolean;
+}
+
+declare var ifRoomLackEnergy: boolean;
+declare var structures: {
+    myTowers?: StructureTower[],
+    room?: Room,
+    coreStore?: AnyStoreStructure,
+}

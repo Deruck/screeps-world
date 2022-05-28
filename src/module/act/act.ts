@@ -210,11 +210,16 @@ export const createActModule = function (ctx: ActModuleContext): ActModule {
     
             break_condition(creep) {
                 const store = worldStateModule.getObjectById(this.storeId);
-                var ifStoreCap = this.amount ?
-                    store.store.getFreeCapacity(this.resourceType) > this.amount :
-                    store.store.getFreeCapacity(this.resourceType) > 0;
-                    
-                return ifStoreCap;
+                if (!store) {
+                    creep.actLog(`store does not exist.`);
+                    return false;
+                } else {
+                    var ifStoreCap = this.amount ?
+                        store.store.getFreeCapacity(this.resourceType) > this.amount :
+                        store.store.getFreeCapacity(this.resourceType) > 0;   
+                    return ifStoreCap;
+                }
+
             }
         }
     };
@@ -331,6 +336,9 @@ export const createActModule = function (ctx: ActModuleContext): ActModule {
         
             exec(creep: Creep) {
                 const store = worldStateModule.getObjectById(this.storeId);
+                if (!store) {
+                    return true;
+                }
                 // 初始
                 if (creep.memory.act[this.actType] == 0) {
                     creep.say(`🚴‍♀️`);
@@ -362,6 +370,16 @@ export const createActModule = function (ctx: ActModuleContext): ActModule {
                 delete creep.memory.act[this.actType];
                 return true;
             },
+
+            break_condition(creep) {
+                const store = worldStateModule.getObjectById(this.storeId);
+                if (!store) {
+                    creep.actLog(`store does not exist`);
+                    return false;
+                } else {
+                    return (store.store[this.resourceType] > 0);
+                }
+            }
         }
     };
 
@@ -523,9 +541,15 @@ export const createActModule = function (ctx: ActModuleContext): ActModule {
     
             break_condition(creep) {
                 const structure = worldStateModule.getObjectById(this.structureId)
-                const ifNeedRepair = structure.hits < structure.hitsMax;
-                const ifCreepHaveEnergy = (creep.store[RESOURCE_ENERGY] > 0);
-                return ifNeedRepair && ifCreepHaveEnergy;
+                if (!structure) {
+                    creep.actLog(`structure does not exist.`);
+                    return false;
+                } else {
+                    const ifNeedRepair = structure.hits < structure.hitsMax;
+                    const ifCreepHaveEnergy = (creep.store[RESOURCE_ENERGY] > 0);
+                    return ifNeedRepair && ifCreepHaveEnergy;
+                }
+
             }
         }
     }

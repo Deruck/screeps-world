@@ -20,15 +20,44 @@ MemoryController.removeDeadCreepMemory();
 const roleList: Role[] = configs.roleList;
 
 
-export const loop = function() {
-    console.log(`======================================tick: ${Game.time}, reset: ${global.ticksFromLastReset}`);
+export const loop = function () {
+    global.structures = {};
+    global.structures.room = Game.rooms["E4S49"];
+    //@ts-ignore
+    global.structures.myTowers = global.structures.room.find(FIND_MY_STRUCTURES, {
+        filter: {structureType: STRUCTURE_TOWER}
+    })
+    //@ts-ignore
+    global.structures.coreStore = Game.getObjectById("62910851f07f19375f2e7ea1");
+    global.ifRoomLackEnergy = global.structures.room.energyAvailable / global.structures.room.energyCapacityAvailable < 0.8;
+
+
+
+    const constructions = worldStateModule.getAllMyConstructionSites(global.structures.room);
+    if (constructions.length == 0) {
+        Game.notify(`Construction Done.`, 6 * 60);
+    }
+    
+
+    /*****************************************************************************************
+     * Role
+     *****************************************************************************************/
     let ifPreRoleHaveMeetCreepNumber: boolean = true;
     for (let role of roleList) {
         const creepsOfRole = worldStateModule.getAllMyCreepsWithRole(role.roleName);
         if (ifPreRoleHaveMeetCreepNumber) {
-            if (role.creepNum > creepsOfRole.length) {
+            var renewCreep: Creep = undefined;
+            if (role.creepNum >= creepsOfRole.length) {
+                for (let creep of creepsOfRole) {
+                    // 两倍spawn时间+30tick到岗时间缓冲
+                    if (creep.ticksToLive < role.creepType.bodyParts.length * 3 * 2 + 30 && !creep.memory.renewed) {
+                        renewCreep = creep;
+                    }
+                }
+            }
+            if (role.creepNum > creepsOfRole.length || renewCreep) {
                 ifPreRoleHaveMeetCreepNumber = false;
-                const spawn = worldStateModule.getAllMySpawnsWithFilter()[0];
+                const spawn = worldStateModule.getAllMySpawns()[0];
                 const spawnCode = spawn.spawnCreepFromType(role.creepType, undefined, {
                     memory: {
                         type: role.creepType,
@@ -37,8 +66,9 @@ export const loop = function() {
                         }
                     }
                 });
-                if (spawnCode == ReturnCode.SUCCESS) {
-                    console.log(`Spawn type [${role.creepType.name}] for role [${role.roleName}]: [${spawnCode}]`);
+                console.log(`Spawn type [${role.creepType.name}] for role [${role.roleName}]: [${spawnCode}]`);
+                if (role.creepNum <= creepsOfRole.length && spawnCode == ReturnCode.SUCCESS && renewCreep) {
+                    renewCreep.memory.renewed = true;
                 }
             } else {
                 ifPreRoleHaveMeetCreepNumber = true;
@@ -46,15 +76,76 @@ export const loop = function() {
         }
 
         for (let creep of creepsOfRole) {
-            role.runRole(creep);
+            creep.room.visual.circle(creep.pos, {
+                radius: 0.6,
+                opacity: 0.5,
+                stroke: role.color,
+                fill: "transparent",
+                strokeWidth: 0.2
+            });
+            try {
+                role.runRole(creep);
             actModule.work(creep);
+            } catch(err) {
+                console.log(`[ERROR]: ${err}`);
+            }
         }
-
     }
+
+    /*****************************************************************************************
+     * Tower
+     *****************************************************************************************/
+
+    const hostileCreeps = global.structures.room.find(FIND_HOSTILE_CREEPS);
+    if (hostileCreeps.length > 0) {
+        for (let tower of global.structures.myTowers) {
+            tower.attack(hostileCreeps[0]);
+        }
+    } else {
+        var repairStructures = worldStateModule.getRepairStructures(global.structures.room, 0.8, [STRUCTURE_WALL, STRUCTURE_RAMPART]);
+        if (repairStructures.length == 0) {
+            globalMemoryModule.getGlobalMemory().cache.repairStructure.cache = new Map();
+            repairStructures = worldStateModule.getRepairStructures(global.structures.room, 2e-3, [STRUCTURE_WALL]);
+        }
+        if (repairStructures.length == 0 && !global.ifRoomLackEnergy) {
+            globalMemoryModule.getGlobalMemory().cache.repairStructure.cache = new Map();
+            repairStructures = worldStateModule.getRepairStructures(global.structures.room, 2e-4, []);
+        }
+        var lowestStructure: Structure;
+        for (let structure of repairStructures) {
+            if (!lowestStructure || structure.hits / structure.hitsMax < lowestStructure.hits / lowestStructure.hitsMax) {
+                lowestStructure = structure;
+            }
+        }
+        for (let tower of global.structures.myTowers) {
+            tower.repair(lowestStructure);
+        }
+    }
+
+    /*****************************************************************************************
+     * link
+     *****************************************************************************************/
+    //@ts-ignore
+    const linkLeft: StructureLink = worldStateModule.getObjectById("6290b85dfd0df37b31c4d29b");
+    //@ts-ignore
+    const linkRight: StructureLink = worldStateModule.getObjectById("6290c8eb817aa31bb34e764a");
+    if (linkRight.store[RESOURCE_ENERGY] > 100 && !linkRight.cooldown) {
+        linkRight.transferEnergy(linkLeft);
+    }
+
 
     globalMemoryModule.resetCache();
     global.ticksFromLastReset++;
-    console.log(`================================================================`);
+    Game.cpu.generatePixel();
+
+    console.log(`---------------Info---------------`)
+    console.log(`tick: ${Game.time}`);
+    console.log(`reset: ${global.ticksFromLastReset}`);
+    console.log(`room energy: ${global.structures.room.energyAvailable}/${global.structures.room.energyCapacityAvailable} (${(global.structures.room.energyAvailable / global.structures.room.energyCapacityAvailable * 100).toFixed(2)}%)`);
+    const usedCpu = Game.cpu.getUsed();
+    console.log(`use cpu: ${usedCpu.toFixed(2)}/20 (${(usedCpu / 20 * 100).toFixed(2)}%)`);
+    console.log(`bucket: ${Game.cpu.bucket}/10000 (${(Game.cpu.bucket / 10000 * 100).toFixed(2)}%)`);
+    console.log(`================================================================================`);
 }
 
 
