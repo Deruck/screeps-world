@@ -42,9 +42,11 @@ export const loop = function () {
     /*****************************************************************************************
      * Role
      *****************************************************************************************/
+    var roleNum: Map<string, number> = new Map();
     let ifPreRoleHaveMeetCreepNumber: boolean = true;
     for (let role of roleList) {
         const creepsOfRole = worldStateModule.getAllMyCreepsWithRole(role.roleName);
+        roleNum.set(role.roleName, creepsOfRole.length);
         if (ifPreRoleHaveMeetCreepNumber) {
             var renewCreep: Creep = undefined;
             if (role.creepNum >= creepsOfRole.length) {
@@ -105,11 +107,11 @@ export const loop = function () {
         var repairStructures = worldStateModule.getRepairStructures(global.structures.room, 0.8, [STRUCTURE_WALL, STRUCTURE_RAMPART]);
         if (repairStructures.length == 0) {
             globalMemoryModule.getGlobalMemory().cache.repairStructure.cache = new Map();
-            repairStructures = worldStateModule.getRepairStructures(global.structures.room, 2e-3, [STRUCTURE_WALL]);
+            repairStructures = worldStateModule.getRepairStructures(global.structures.room, 2e-4, [STRUCTURE_WALL]);
         }
         if (repairStructures.length == 0 && !global.ifRoomLackEnergy) {
             globalMemoryModule.getGlobalMemory().cache.repairStructure.cache = new Map();
-            repairStructures = worldStateModule.getRepairStructures(global.structures.room, 2e-4, []);
+            repairStructures = worldStateModule.getRepairStructures(global.structures.room, 2e-5, []);
         }
         var lowestStructure: Structure;
         for (let structure of repairStructures) {
@@ -138,13 +140,29 @@ export const loop = function () {
     global.ticksFromLastReset++;
     Game.cpu.generatePixel();
 
-    console.log(`---------------Info---------------`)
+    console.log(`\n\n--------------------Info--------------------`)
     console.log(`tick: ${Game.time}`);
     console.log(`reset: ${global.ticksFromLastReset}`);
     console.log(`room energy: ${global.structures.room.energyAvailable}/${global.structures.room.energyCapacityAvailable} (${(global.structures.room.energyAvailable / global.structures.room.energyCapacityAvailable * 100).toFixed(2)}%)`);
     const usedCpu = Game.cpu.getUsed();
     console.log(`use cpu: ${usedCpu.toFixed(2)}/20 (${(usedCpu / 20 * 100).toFixed(2)}%)`);
     console.log(`bucket: ${Game.cpu.bucket}/10000 (${(Game.cpu.bucket / 10000 * 100).toFixed(2)}%)`);
+    
+    const storageUse = global.structures.coreStore.store.getUsedCapacity();
+    const storageTotal = global.structures.coreStore.store.getCapacity();
+    console.log(`storage: ${storageUse}/${storageTotal} (${(storageUse / storageTotal * 100).toFixed(2)}%)`);
+
+
+    const level = global.structures.room.controller.level;
+    const progress = global.structures.room.controller.progress;
+    const progressTotal = global.structures.room.controller.progressTotal;
+    console.log(`controller: level${level} ${progress}/${progressTotal} (${(progress / progressTotal * 100).toFixed(2)}%)`);
+    console.log(`creeps: `);
+
+    for (let [roleName, num] of roleNum) {
+        console.log(` - ${roleName}: ${roleNum.get(roleName)}`);
+    }
+    console.log(`--------------------------------------------\n\n`)
     console.log(`================================================================================`);
 }
 

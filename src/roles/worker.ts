@@ -63,7 +63,7 @@ export const worker1: Role = {
     roleName: "worker1",
     roleInfo: "worker: withdraw(container left) -> [store(spawn) > repair > build > upgrade] ",
     creepType: worker,
-    creepNum: 2, 
+    creepNum: 3, 
     color: Color.WORKER,
     runRole(creep) {
         var busy = global.ifRoomLackEnergy;
