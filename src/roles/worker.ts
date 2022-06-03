@@ -3,6 +3,7 @@ import { Color, CreepTypeNames } from "@/const";
 import { actModule } from "@/interface/act.module";
 import { worldStateModule } from "@/interface/world_state.module";
 import { carrierLeft } from "./carrier";
+import { filter } from "lodash";
 
 
 
@@ -11,9 +12,9 @@ import { carrierLeft } from "./carrier";
 const worker = creepTypeModule.getCreepType(
     CreepTypeNames.WORKER,
     {
-        work: 5, // 500
-        carry: 15, //750
-        move: 10 // 500
+        work: 1, //5, // 500
+        carry: 2, //15, //750
+        move: 2, //10 // 500
     }
 )
 
@@ -82,7 +83,7 @@ export const worker1: Role = {
          * flag build
          *****************************************************************************************/
         if (!busy) {
-            const flags = creep.room.find(FIND_FLAGS);
+            const flags = creep.room.find(FIND_FLAGS, {filter: {color: COLOR_GREY}});
             if (flags.length > 0) {
                 const structures = flags[0].pos.lookFor(LOOK_CONSTRUCTION_SITES);
                 if (structures.length > 0) {

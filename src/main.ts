@@ -28,8 +28,15 @@ export const loop = function () {
         filter: {structureType: STRUCTURE_TOWER}
     })
     //@ts-ignore
-    global.structures.coreStore = Game.getObjectById("62910851f07f19375f2e7ea1");
+    global.structures.coreStore = Game.getObjectById("6298da09875df976499f00bc");
     global.ifRoomLackEnergy = global.structures.room.energyAvailable / global.structures.room.energyCapacityAvailable < 0.8;
+    //@ts-ignore
+    global.structures.linkLeft = worldStateModule.getObjectById("6290b85dfd0df37b31c4d29b");
+    //@ts-ignore
+    global.structures.linkRight = worldStateModule.getObjectById("6290c8eb817aa31bb34e764a");
+    //@ts-ignore
+    global.structures.linkMiddle = worldStateModule.getObjectById("6298d70b9fd41683ac2801c2");
+
 
 
 
@@ -120,25 +127,30 @@ export const loop = function () {
             }
         }
         for (let tower of global.structures.myTowers) {
-            tower.repair(lowestStructure);
+            if(tower.store[RESOURCE_ENERGY] / 1000 >= 0.5)
+                tower.repair(lowestStructure);
         }
     }
 
     /*****************************************************************************************
      * link
      *****************************************************************************************/
-    //@ts-ignore
-    const linkLeft: StructureLink = worldStateModule.getObjectById("6290b85dfd0df37b31c4d29b");
-    //@ts-ignore
-    const linkRight: StructureLink = worldStateModule.getObjectById("6290c8eb817aa31bb34e764a");
+    const linkLeft: StructureLink = global.structures.linkLeft;
+    const linkRight: StructureLink = global.structures.linkRight;
+    const linkMiddle: StructureLink = global.structures.linkMiddle;
+    if (linkLeft.store[RESOURCE_ENERGY] > 100 && !linkLeft.cooldown) {
+        linkLeft.transferEnergy(linkMiddle);
+    }
     if (linkRight.store[RESOURCE_ENERGY] > 100 && !linkRight.cooldown) {
-        linkRight.transferEnergy(linkLeft);
+        linkRight.transferEnergy(linkMiddle);
     }
 
 
     globalMemoryModule.resetCache();
     global.ticksFromLastReset++;
-    Game.cpu.generatePixel();
+    if (Game.cpu.bucket == 10000) {
+        Game.cpu.generatePixel();
+    }
 
     console.log(`\n\n--------------------Info--------------------`)
     console.log(`tick: ${Game.time}`);

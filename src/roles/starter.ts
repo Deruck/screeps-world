@@ -12,13 +12,14 @@ const starter = creepTypeModule.getCreepType(
     }
 )
 
-export const starter0: Role = {
-    roleName: "starter: harvest(source0) -> [store(spawn | extension) > repair > build > upgrade] ",
-    roleInfo: "starter: harvest(source0) -> [store(spawn | extension) > repair > build > upgrade] ",
-    creepNum: 0,
+export const starterSourceTop: Role = {
+    roleName: "starterTop",
+    roleInfo: "starter: harvest(source top) -> [store(spawn | extension) > repair > build > upgrade] ",
+    color: Color.WORKER,
+    creepNum: 6,
     creepType: starter,
     runRole(creep) {
-        const source = worldStateModule.getAllSourcesInRoom(creep.room)[0];
+        const source = global.structures.sources.get("top");
         var busy = false;
         if (creep.store[RESOURCE_ENERGY] == 0) {
             actModule.harvestResource(creep, source.id);
@@ -39,27 +40,44 @@ export const starter0: Role = {
                 busy = true;
             }
         }
+
+        /*****************************************************************************************
+         * flag build
+         *****************************************************************************************/
         if (!busy) {
-            const filter = (constructionSite: ConstructionSite) => constructionSite.structureType != STRUCTURE_ROAD;
-            const constructionSite = worldStateModule.getMyClosestConstructionSite(creep, filter);
-            if (constructionSite) {
-                actModule.buildConstruction(creep, constructionSite.id, 5);
-                busy = true;
+            const flags = creep.room.find(FIND_FLAGS, {filter: {color: COLOR_GREY}});
+            if (flags.length > 0) {
+                const structures = flags[0].pos.lookFor(LOOK_CONSTRUCTION_SITES);
+                if (structures.length > 0) {
+                    const structure = structures[0];
+                    actModule.buildConstruction(creep, structure.id);
+                } else {
+                    flags[0].remove();
+                }
             }
         }
+        // if (!busy) {
+        //     const filter = (constructionSite: ConstructionSite) => constructionSite.structureType != STRUCTURE_ROAD;
+        //     const constructionSite = worldStateModule.getMyClosestConstructionSite(creep, filter);
+        //     if (constructionSite) {
+        //         actModule.buildConstruction(creep, constructionSite.id, 5);
+        //         busy = true;
+        //     }
+        // }
         if (!busy) {
             actModule.upgrade(creep, 10);
         }
     }
 }
 
-export const starter1: Role = {
-    roleName: "starter: harvest(source1) -> [store(spawn | extension) > repair > build > upgrade] ",
-    roleInfo: "starter: harvest(source1) -> [store(spawn | extension) > repair > build > upgrade] ",
-    creepNum: 0,
+export const starterSourceBottom: Role = {
+    roleName: "starterBottom",
+    roleInfo: "starter: harvest(sourceBottom) -> [store(spawn | extension) > repair > build > upgrade] ",
+    color: Color.WORKER,
+    creepNum: 9,
     creepType: starter,
     runRole(creep) {
-        const source = worldStateModule.getAllSourcesInRoom(creep.room)[1];
+        const source = global.structures.sources.get("bottom");
         var busy = false;
         if (creep.store[RESOURCE_ENERGY] == 0) {
             actModule.harvestResource(creep, source.id);
@@ -80,16 +98,50 @@ export const starter1: Role = {
                 busy = true;
             }
         }
-        if (!busy) {
-            const filter = (constructionSite: ConstructionSite) => constructionSite.structureType != STRUCTURE_ROAD;
-            const constructionSite = worldStateModule.getMyClosestConstructionSite(creep, filter);
-            if (constructionSite) {
-                actModule.buildConstruction(creep, constructionSite.id, 5);
-                busy = true;
+        /*****************************************************************************************
+         * flag build
+         *****************************************************************************************/
+         if (!busy) {
+            const flags = creep.room.find(FIND_FLAGS, {filter: {color: COLOR_GREY}});
+            if (flags.length > 0) {
+                const structures = flags[0].pos.lookFor(LOOK_CONSTRUCTION_SITES);
+                if (structures.length > 0) {
+                    const structure = structures[0];
+                    actModule.buildConstruction(creep, structure.id);
+                } else {
+                    flags[0].remove();
+                }
             }
         }
+        // if (!busy) {
+        //     const filter = (constructionSite: ConstructionSite) => constructionSite.structureType != STRUCTURE_ROAD;
+        //     const constructionSite = worldStateModule.getMyClosestConstructionSite(creep, filter);
+        //     if (constructionSite) {
+        //         actModule.buildConstruction(creep, constructionSite.id, 5);
+        //         busy = true;
+        //     }
+        // }
         if (!busy) {
             actModule.upgrade(creep, 10);
+        }
+    }
+}
+
+
+export const upgraderBottom: Role = {
+    roleName: "upgrader",
+    roleInfo: "worker: keep upgrading from source0",
+    creepNum: 1,
+    creepType: starter,
+    color: Color.UPGRADER,
+    runRole(creep) {
+        //@ts-ignore
+        const source = global.structures.sources.get("top");
+
+        if (creep.store[RESOURCE_ENERGY] == 0) {
+            actModule.harvestResource(creep, source.id);
+        } else {
+            actModule.upgrade(creep);
         }
     }
 }

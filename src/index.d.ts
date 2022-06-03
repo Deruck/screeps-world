@@ -10,6 +10,10 @@ interface CreepMemory {
 declare var ifRoomLackEnergy: boolean;
 declare var structures: {
     myTowers?: StructureTower[],
+    mySpawns?: StructureSpawn[],
     room?: Room,
     coreStore?: AnyStoreStructure,
+
+    links?: Map<string, StructureLink>,
+    sources?: Map<string, Source>, 
 }

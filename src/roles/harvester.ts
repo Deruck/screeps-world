@@ -8,9 +8,9 @@ import { worldStateModule } from "@/interface/world_state.module";
 const harvester = creepTypeModule.getCreepType(
     CreepTypeNames.HARVESTER,
     {
-        work: 5, // 500
+        work: 2, //5, // 500
         carry: 1,
-        move: 3 // 150
+        move: 1 //3 // 150
     }
 )
 

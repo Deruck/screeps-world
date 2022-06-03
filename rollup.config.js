@@ -38,7 +38,8 @@ const pluginDeploy = config && config.copyPath ?
     screeps({ config, dryRun: !config })
 
 export default {
-    input: 'src/main.ts',
+    // input: 'src/main.ts',
+    input: 'src/main_start.ts',
     // input: 'src/test.ts',
     // input: 'src/command.ts',
     output: {

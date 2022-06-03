@@ -20,11 +20,11 @@ export const transferer0: Role = {
     creepNum: 1, 
     color: Color.TRANSFERER,
     runRole(creep) {
-        if (creep.moveToTarget(new RoomPosition(10, 6, "E4S49"), 0)) {
+        if (creep.moveToTarget(new RoomPosition(27, 13, "E4S49"), 0)) {
             //@ts-ignore
-            const link: StructureLink = worldStateModule.getObjectById("6290b85dfd0df37b31c4d29b");
+            const link: StructureLink = global.structures.linkMiddle;
             //@ts-ignore
-            const storage: StructureStorage = worldStateModule.getObjectById("62910851f07f19375f2e7ea1");
+            const storage: StructureStorage = global.structures.coreStore;
             creep.withdraw(link, RESOURCE_ENERGY);
             creep.transfer(storage, RESOURCE_ENERGY);
         }

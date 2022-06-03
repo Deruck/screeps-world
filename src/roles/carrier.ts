@@ -7,8 +7,8 @@ import { worldStateModule } from "@/interface/world_state.module";
 const carrier = creepTypeModule.getCreepType(
     CreepTypeNames.CARRIER,
     {
-        carry: 24, //1200
-        move: 12 // 600
+        carry: 4, //24, //1200
+        move: 2, //12 // 600
     }
 )
 
