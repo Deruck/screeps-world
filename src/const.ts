@@ -69,6 +69,8 @@ export enum CreepTypeNames {
     /**特化搬运者, 1move + 2carry, 主要在road上行走*/
     CARRIER = "carrier",
     TRANSFERER = "transferer",
+    RANGED_ATTACKER = "ranged_attacker",
+    REPAIRER = "repairer"
 }
 
 /*****************************************************************************************

@@ -6,17 +6,17 @@ import { worldStateModule } from "@/interface/world_state.module";
 const starter = creepTypeModule.getCreepType(
     CreepTypeNames.STARTER,
     {
-        work: 1, // 100
-        move: 2, // 100
-        carry: 1 // 50
+        work: 2, // 200
+        move: 4, // 200
+        carry: 2 // 100
     }
 )
 
 export const starterSourceTop: Role = {
     roleName: "starterTop",
     roleInfo: "starter: harvest(source top) -> [store(spawn | extension) > repair > build > upgrade] ",
-    color: Color.WORKER,
-    creepNum: 6,
+    color: Color.TRANSFERER,
+    creepNum: 0,
     creepType: starter,
     runRole(creep) {
         const source = global.structures.sources.get("top");
@@ -47,6 +47,7 @@ export const starterSourceTop: Role = {
         if (!busy) {
             const flags = creep.room.find(FIND_FLAGS, {filter: {color: COLOR_GREY}});
             if (flags.length > 0) {
+                busy = true;
                 const structures = flags[0].pos.lookFor(LOOK_CONSTRUCTION_SITES);
                 if (structures.length > 0) {
                     const structure = structures[0];
@@ -56,14 +57,14 @@ export const starterSourceTop: Role = {
                 }
             }
         }
-        // if (!busy) {
-        //     const filter = (constructionSite: ConstructionSite) => constructionSite.structureType != STRUCTURE_ROAD;
-        //     const constructionSite = worldStateModule.getMyClosestConstructionSite(creep, filter);
-        //     if (constructionSite) {
-        //         actModule.buildConstruction(creep, constructionSite.id, 5);
-        //         busy = true;
-        //     }
-        // }
+        if (!busy) {
+            const filter = (constructionSite: ConstructionSite) => constructionSite.structureType != STRUCTURE_ROAD;
+            const constructionSite = worldStateModule.getMyClosestConstructionSite(creep, filter);
+            if (constructionSite) {
+                actModule.buildConstruction(creep, constructionSite.id, 5);
+                busy = true;
+            }
+        }
         if (!busy) {
             actModule.upgrade(creep, 10);
         }
@@ -73,8 +74,8 @@ export const starterSourceTop: Role = {
 export const starterSourceBottom: Role = {
     roleName: "starterBottom",
     roleInfo: "starter: harvest(sourceBottom) -> [store(spawn | extension) > repair > build > upgrade] ",
-    color: Color.WORKER,
-    creepNum: 9,
+    color: Color.TRANSFERER,
+    creepNum: 0,
     creepType: starter,
     runRole(creep) {
         const source = global.structures.sources.get("bottom");
@@ -104,6 +105,7 @@ export const starterSourceBottom: Role = {
          if (!busy) {
             const flags = creep.room.find(FIND_FLAGS, {filter: {color: COLOR_GREY}});
             if (flags.length > 0) {
+                busy = true;
                 const structures = flags[0].pos.lookFor(LOOK_CONSTRUCTION_SITES);
                 if (structures.length > 0) {
                     const structure = structures[0];
@@ -113,14 +115,14 @@ export const starterSourceBottom: Role = {
                 }
             }
         }
-        // if (!busy) {
-        //     const filter = (constructionSite: ConstructionSite) => constructionSite.structureType != STRUCTURE_ROAD;
-        //     const constructionSite = worldStateModule.getMyClosestConstructionSite(creep, filter);
-        //     if (constructionSite) {
-        //         actModule.buildConstruction(creep, constructionSite.id, 5);
-        //         busy = true;
-        //     }
-        // }
+        if (!busy) {
+            const filter = (constructionSite: ConstructionSite) => constructionSite.structureType != STRUCTURE_ROAD;
+            const constructionSite = worldStateModule.getMyClosestConstructionSite(creep, filter);
+            if (constructionSite) {
+                actModule.buildConstruction(creep, constructionSite.id, 5);
+                busy = true;
+            }
+        }
         if (!busy) {
             actModule.upgrade(creep, 10);
         }
@@ -129,11 +131,11 @@ export const starterSourceBottom: Role = {
 
 
 export const upgraderBottom: Role = {
-    roleName: "upgrader",
+    roleName: "upgraderStarter",
     roleInfo: "worker: keep upgrading from source0",
-    creepNum: 1,
+    creepNum: 0,
     creepType: starter,
-    color: Color.UPGRADER,
+    color: Color.TRANSFERER,
     runRole(creep) {
         //@ts-ignore
         const source = global.structures.sources.get("top");

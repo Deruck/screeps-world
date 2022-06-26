@@ -11,9 +11,9 @@ declare var ifRoomLackEnergy: boolean;
 declare var structures: {
     myTowers?: StructureTower[],
     mySpawns?: StructureSpawn[],
+    myStores?: Map<string, AnyStoreStructure>,
     room?: Room,
-    coreStore?: AnyStoreStructure,
 
-    links?: Map<string, StructureLink>,
+    myLinks?: Map<string, StructureLink>,
     sources?: Map<string, Source>, 
 }

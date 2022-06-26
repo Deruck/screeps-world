@@ -20,13 +20,51 @@ export const transferer0: Role = {
     creepNum: 1, 
     color: Color.TRANSFERER,
     runRole(creep) {
-        if (creep.moveToTarget(new RoomPosition(27, 13, "E4S49"), 0)) {
-            //@ts-ignore
-            const link: StructureLink = global.structures.linkMiddle;
-            //@ts-ignore
-            const storage: StructureStorage = global.structures.coreStore;
+        if (creep.moveToTarget(new RoomPosition(24, 21, "W51S27"), 0)) {
+            const link: StructureLink = global.structures.myLinks.get("core");
+            const storage: AnyStoreStructure = global.structures.myStores.get("core");
             creep.withdraw(link, RESOURCE_ENERGY);
             creep.transfer(storage, RESOURCE_ENERGY);
+        }
+
+    }
+}
+
+export const transfererBottom: Role = {
+    roleName: "transfererBottom",
+    roleInfo: "transfer from container bottom to storage",
+    creepType: transferer,
+    creepNum: 0, 
+    color: Color.TRANSFERER,
+    runRole(creep) {
+        //@ts-ignore
+        const container: StructureContainer = global.structures.myStores.get("bottom");
+        //@ts-ignore
+        const storage: StructureContainer = global.structures.myStores.get("core");
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+            actModule.withdrawResource(creep, container.id, RESOURCE_ENERGY);
+        } else {
+            actModule.storeResource(creep, storage.id, RESOURCE_ENERGY);
+        }
+
+    }
+}
+
+export const transfererTop: Role = {
+    roleName: "transfererTop",
+    roleInfo: "transfer from container top to storage",
+    creepType: transferer,
+    creepNum: 0, 
+    color: Color.TRANSFERER,
+    runRole(creep) {
+        //@ts-ignore
+        const container: StructureContainer = global.structures.myLinks.get("top");
+        //@ts-ignore
+        const storage: StructureContainer = global.structures.myStores.get("core");
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+            actModule.withdrawResource(creep, container.id, RESOURCE_ENERGY);
+        } else {
+            actModule.storeResource(creep, storage.id, RESOURCE_ENERGY);
         }
 
     }
