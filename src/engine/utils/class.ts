@@ -1,14 +1,14 @@
 import { registerToGlobal } from "./global";
 
-export function getClassByNameName(obj: Object): string {
+export function getClassName(obj: Object): string {
     return obj.constructor.name;
 }
 
-export function registerClass<T extends Object>(cls: new (...param: any[]) => T): void {
+export function registerClass<T extends Object>(cls: Constructor<T>): void {
     registerToGlobal(cls, cls.name);
 }
 
-export function getClassByName<T extends Object>(name: string): new (...param: any[]) => T {
+export function getClassByName<T extends Object>(name: string): Constructor<T> {
     const res = (global as any)[name];
     if (res === undefined) {
         throw Error(`Register class ${name} by registerClass(${name}) first.`);

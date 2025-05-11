@@ -1,56 +1,46 @@
-import { registerClass } from "./utils/class";
+import { getFromGlobal } from "./utils/global";
 import { logger } from "./utils/logger";
 import { Singleton } from "./utils/singleton";
 
 declare global {
-    interface MemoryObj { }
-    interface HasMemory {
-        memory: MemoryObj;
+    interface HasMemory<MemoryType> {
+        constructor: ConstructorWithMemory<HasMemory<MemoryType>>;
     }
 
     type ClassName = string;
     type MemDest = string;
+    type MemoryType<T> =  T extends HasMemory<infer M> ? M : never;
+    type ConstructorWithMemory<T extends HasMemory<any>> = new (memory: MemoryType<T>) => T;
 }
 
 declare global {
     interface Memory {
         memoryManager: {
-            classMap: { [dest: MemDest]: ClassName },
-            reservedCreeps: { [creepName: string]: null }
+            classMap: { [dest: MemDest]: ClassName }
         };
     }
 }
 
 class MemoryManager extends Singleton {
-    get memory() {
-        return Memory.memoryManager;
-    }
 
-    get classMap() {
-        return this.memory.classMap;
-    }
-
-    get reservedCreeps() {
-        return this.memory.reservedCreeps;
-    }
-
-    private constructor() {
-        super()
-        if (!Memory.memoryManager) {
-            Memory.memoryManager = {
-                classMap: {},
-                reservedCreeps: {}
-            }
+    load<T extends HasMemory<any>>(dest: MemDest): T | null {
+        const className = this.classMap[dest];
+        if (!className) {
+            logger.error(`Dest "${dest}" has no class name.`)
+            return null;
         }
-        if (!this.memory.classMap) {
-            this.memory.classMap = {};
+        var obj: T;
+        try {
+            obj = new (getFromGlobal(className) as Constructor<T>)();
+        } catch {
+            logger.error(`Class ${className} is not registered.`);
+            return null;
         }
-        if (!this.memory.reservedCreeps) {
-            this.memory.reservedCreeps = {};
-        }
+        obj.memory = this.getObjByDest(dest) as Object;
+        return obj as T;
     }
 
-    set(obj: HasMemory, dest: MemDest) {
+    dump<T extends HasMemory<any>>(obj: T, dest: MemDest) {
         this.classMap[dest] = obj.constructor.name;
         eval(`${this.getFullDest(dest)} = obj.memory;`);
     }
@@ -62,33 +52,40 @@ class MemoryManager extends Singleton {
         delete this.classMap[dest];
     }
 
-    load<T extends HasMemory>(dest: MemDest): T | undefined {
-        const className = this.classMap[dest];
-        if (!className) {
-            return undefined;
-        }
-        let obj: T;
-        try {
-            obj = new (<any>global)[className]();
-        } catch {
-            logger.error(`Class ${className} is not registered.`);
-            return undefined;
-        }
-        obj.memory = this.getObjByDest(dest) as Object;
-        return obj as T;
-    }
-
     move(source: MemDest, target: MemDest) {
-        const obj = this.load(source);
+        const obj = this.getObjByDest(source);
         this.delete(source);
-        if (obj) {
-            this.set(obj, target);
+        if (obj === undefined) {
+            return;
         }
+        eval(`${this.getFullDest(target)} = obj;`);
+        this.classMap[target] = this.classMap[source];
+        delete this.classMap[source];
     }
 
     // Singleton Interface
     static getInstance(): MemoryManager {
         return super.getInstance.call(this) as MemoryManager;
+    }
+
+    private get memory() {
+        return Memory.memoryManager;
+    }
+
+    private get classMap() {
+        return this.memory.classMap;
+    }
+
+    private constructor() {
+        super()
+        if (!Memory.memoryManager) {
+            Memory.memoryManager = {
+                classMap: { }
+            }
+        }
+        if (!this.memory.classMap) {
+            this.memory.classMap = { };
+        }
     }
 
     private getObjByDest(dest: MemDest): Object | undefined {
